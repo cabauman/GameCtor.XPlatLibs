@@ -44,6 +44,26 @@ namespace GameCtor.FirebaseAuth.Mobile
                 .ToObservable()
                 .Select(_ => Unit.Default);
         }
+        public IObservable<Unit> SignInWithTwitter(string token, string secret)
+        {
+            return CrossFirebaseAuth.Current.SignInWithTwitterAsync(token, secret)
+                .ToObservable()
+                .Select(_ => Unit.Default);
+        }
+
+        public IObservable<Unit> SignInWithGithub(string token)
+        {
+            return CrossFirebaseAuth.Current.SignInWithGithubAsync(token)
+                .ToObservable()
+                .Select(_ => Unit.Default);
+        }
+
+        public IObservable<Unit> SignInWithEmail(string email, string password)
+        {
+            return CrossFirebaseAuth.Current.SignInWithEmailAsync(email, password)
+                .ToObservable()
+                .Select(_ => Unit.Default);
+        }
 
         public IObservable<Unit> SignInAnonymously()
         {

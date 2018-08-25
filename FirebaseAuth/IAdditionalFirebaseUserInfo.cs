@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GameCtor.FirebaseAuth.Mobile
+namespace GameCtor.FirebaseAuth
 {
     public interface IAdditionalFirebaseUserInfo
     {

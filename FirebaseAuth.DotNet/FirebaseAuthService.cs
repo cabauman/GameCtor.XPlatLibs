@@ -87,6 +87,25 @@ namespace GameCtor.FirebaseAuth.DotNet
             return SignInWithOAuth(FirebaseAuthType.Google, authToken);
         }
 
+        public IObservable<Unit> SignInWithTwitter(string token, string secret)
+        {
+            return SignInWithOAuth(FirebaseAuthType.Twitter, token);
+        }
+
+        public IObservable<Unit> SignInWithGithub(string token)
+        {
+            return SignInWithOAuth(FirebaseAuthType.Github, token);
+        }
+
+        public IObservable<Unit> SignInWithEmail(string email, string password)
+        {
+            return _authProvider
+                .SignInWithEmailAndPasswordAsync(email, password)
+                .ToObservable()
+                .Do(authLink => _authLink = authLink)
+                .SelectMany(authLink => SaveAccount(authLink));
+        }
+
         public IObservable<PhoneNumberVerificationResult> SignInWithPhoneNumber(string phoneNumber)
         {
             throw new NotImplementedException();
@@ -100,7 +119,7 @@ namespace GameCtor.FirebaseAuth.DotNet
         public void SignOut()
         {
             _authLink = null;
-            _localStorageService.RemoveAll();
+            _localStorageService.Remove(FIREBASE_AUTH_JSON_KEY);
         }
 
         private IObservable<Unit> SignInWithOAuth(FirebaseAuthType authType, string authToken)

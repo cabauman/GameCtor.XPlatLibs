@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace GameCtor.FirebaseAuth.Mobile
+namespace GameCtor.FirebaseAuth
 {
     public interface IFirebaseUser
     {

@@ -1,6 +1,6 @@
-﻿namespace GameCtor.FirebaseAuth.Mobile
+﻿namespace GameCtor.FirebaseAuth
 {
-    public class PhoneNumberSignInResult
+    public struct PhoneNumberSignInResult
     {
         public IFirebaseAuthResult AuthResult { get; set; }
 

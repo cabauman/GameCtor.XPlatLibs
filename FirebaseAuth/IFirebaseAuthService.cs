@@ -12,9 +12,17 @@ namespace GameCtor.FirebaseAuth
 
         Task<string> GetIdTokenAsync();
 
-        IObservable<Unit> SignInWithFacebook(string authToken);
+        IObservable<Unit> SignInWithGoogle(string accessToken);
 
-        IObservable<Unit> SignInWithGoogle(string authToken);
+        //IObservable<Unit> SignInWithGoogle(string idToken, string accessToken);
+
+        IObservable<Unit> SignInWithFacebook(string accessToken);
+
+        IObservable<Unit> SignInWithTwitter(string token, string secret);
+
+        IObservable<Unit> SignInWithGithub(string token);
+
+        IObservable<Unit> SignInWithEmail(string email, string password);
 
         IObservable<PhoneNumberVerificationResult> SignInWithPhoneNumber(string phoneNumber);
 
