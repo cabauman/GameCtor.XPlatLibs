@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>GameCtor.FirebaseStorage.DotNet</AssemblyName>
+    <RootNamespace>GameCtor.FirebaseStorage.DotNet</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FirebaseStorage.net" Version="1.0.2" />
+    <PackageReference Include="System.Reactive" Version="4.1.0" />
+    <PackageReference Include="System.Reactive.Compatibility" Version="4.1.0" />
+  </ItemGroup>
+
+</Project>

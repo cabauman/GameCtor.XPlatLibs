@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>GameCtor.FirebaseAuth.Mobile</RootNamespace>
+    <AssemblyName>GameCtor.FirebaseAuth.Mobile</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GameCtor.Firebase.AuthWrapper" Version="1.0.3" />
+    <PackageReference Include="System.Reactive" Version="4.1.0" />
+    <PackageReference Include="System.Reactive.Compatibility" Version="4.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FirebaseAuth\FirebaseAuth.csproj" />
+  </ItemGroup>
+
+</Project>

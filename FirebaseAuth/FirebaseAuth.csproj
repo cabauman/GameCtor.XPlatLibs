@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>GameCtor.FirebaseAuth</RootNamespace>
+    <AssemblyName>GameCtor.FirebaseAuth</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Reactive" Version="4.1.0" />
+    <PackageReference Include="System.Reactive.Compatibility" Version="4.1.0" />
+  </ItemGroup>
+
+</Project>

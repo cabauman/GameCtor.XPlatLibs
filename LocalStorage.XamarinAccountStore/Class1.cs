@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GameCtor.Core
+namespace LocalStorage.XamarinAccountStore
 {
     public class Class1
     {

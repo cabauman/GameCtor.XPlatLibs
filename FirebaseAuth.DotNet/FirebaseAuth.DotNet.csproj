@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>GameCtor.FirebaseAuth.DotNet</AssemblyName>
+    <RootNamespace>GameCtor.FirebaseAuth.DotNet</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FirebaseAuthentication.net" Version="3.0.7" />
+    <PackageReference Include="System.Reactive" Version="4.1.0" />
+    <PackageReference Include="System.Reactive.Compatibility" Version="4.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FirebaseAuth\FirebaseAuth.csproj" />
+    <ProjectReference Include="..\LocalStorage\LocalStorage.csproj" />
+  </ItemGroup>
+
+</Project>
