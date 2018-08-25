@@ -4,7 +4,6 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
-using GameCtor.Firebase.AuthWrapper;
 
 namespace GameCtor.FirebaseAuth.Mobile
 {
@@ -55,10 +54,6 @@ namespace GameCtor.FirebaseAuth.Mobile
 
         public IObservable<PhoneNumberVerificationResult> SignInWithPhoneNumber(string phoneNumber)
         {
-            return Observable
-                .Return(new PhoneNumberVerificationResult(false, "123456"))
-                .Delay(TimeSpan.FromSeconds(1));
-
             return CrossFirebaseAuth.Current.SignInWithPhoneNumberAsync(phoneNumber)
                 .ToObservable()
                 .Select(
@@ -70,10 +65,6 @@ namespace GameCtor.FirebaseAuth.Mobile
 
         public IObservable<Unit> SignInWithPhoneNumber(string verificationId, string verificationCode)
         {
-            return Observable
-                .Return(Unit.Default)
-                .Delay(TimeSpan.FromSeconds(1));
-
             return CrossFirebaseAuth.Current.SignInWithPhoneNumberAsync(verificationId, verificationCode)
                 .ToObservable()
                 .Select(_ => Unit.Default);
@@ -81,10 +72,6 @@ namespace GameCtor.FirebaseAuth.Mobile
 
         public IObservable<PhoneNumberVerificationResult> LinkPhoneNumberToCurrentUser(string phoneNumber)
         {
-            return Observable
-                .Return(new PhoneNumberVerificationResult(false, "123456"))
-                .Delay(TimeSpan.FromSeconds(1));
-
             return CrossFirebaseAuth.Current.LinkPhoneNumberWithCurrentUserAsync(phoneNumber)
                 .ToObservable()
                 .Select(
@@ -96,10 +83,6 @@ namespace GameCtor.FirebaseAuth.Mobile
 
         public IObservable<Unit> LinkPhoneNumberToCurrentUser(string verificationId, string verificationCode)
         {
-            return Observable
-                .Return(Unit.Default)
-                .Delay(TimeSpan.FromSeconds(1));
-
             return CrossFirebaseAuth.Current.CurrentUser.LinkWithPhoneNumberAsync(verificationId, verificationCode)
                 .ToObservable()
                 .Select(_ => Unit.Default);
