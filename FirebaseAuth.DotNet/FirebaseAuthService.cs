@@ -37,8 +37,9 @@ namespace GameCtor.FirebaseAuth.DotNet
         public FirebaseAuthService(string apiKey, ILocalStorageService localStorageService)
         {
             _authProvider = new FirebaseAuthProvider(new FirebaseConfig(apiKey));
+            _localStorageService = localStorageService;
 
-            localStorageService.Get(FIREBASE_AUTH_JSON_KEY)
+            _localStorageService.Get(FIREBASE_AUTH_JSON_KEY)
                 .Where(x => x != null)
                 .Subscribe(
                     authJson =>

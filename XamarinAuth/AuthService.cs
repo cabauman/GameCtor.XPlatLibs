@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -8,6 +9,7 @@ namespace GameCtor.XamarinAuth
 {
     public partial class AuthService : IAuthService
     {
+        private string _provider;
         private Subject<Unit> _authFlowTriggered;
         private OAuth2Config _googleConfig;
         private OAuth2Config _facebookConfig;
@@ -134,8 +136,20 @@ namespace GameCtor.XamarinAuth
             TriggerOAuth2Flow(_facebookConfig);
         }
 
+        public void GetAccountInfo(string provider)
+        {
+            var account = Xamarin.Auth.AccountStore
+                .Create()
+                .FindAccountsForService(provider)
+                .FirstOrDefault();
+        }
+
         private string ExtractAuthToken(Xamarin.Auth.Account account)
         {
+            Xamarin.Auth.AccountStore
+                .Create()
+                .Save(account, _provider);
+
             string authToken = account.Properties["access_token"];
             if(AuthenticationState.Authenticator.GetType() == typeof(OAuth1Authenticator))
             {
