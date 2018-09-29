@@ -1,0 +1,107 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--Work around so the conditions work below-->
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80</TargetFrameworks>
+    <!--Feel free to add as many targets as you need below
+    netstandard1.0;netstandard2.0;MonoAndroid80;Xamarin.iOS10;uap10.0.16299;Xamarin.TVOS10;Xamarin.WatchOS10;Xamarin.Mac20;Tizen40
+    -->
+    <AssemblyName>GameCtor.FirebaseAnalytics</AssemblyName>
+    <RootNamespace>GameCtor.FirebaseAnalytics</RootNamespace>
+    <PackageId>GameCtor.FirebaseAnalytics</PackageId>
+    
+    <Product>$(AssemblyName) ($(TargetFramework))</Product>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
+    <Version>1.0.0.0</Version>
+    <PackageVersion>1.0.0.0</PackageVersion>
+    <PackOnBuild>true</PackOnBuild>
+    <NeutralLanguage>en</NeutralLanguage>
+    <LangVersion>7.1</LangVersion>
+    <DefineConstants>$(DefineConstants);</DefineConstants>
+    
+    <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    
+    <!--TODO: Fill these in-->
+    <PackageProjectUrl>https://github.com/cabauman/GameCtor.XPlatLibs</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/cabauman/GameCtor.XPlatLibs</RepositoryUrl>
+    <PackageReleaseNotes>Initial release</PackageReleaseNotes>
+    <PackageTags>xamarin, ios, android, xamarin.forms, plugin, firebase, analytics</PackageTags>
+
+    <Title>Firebase Analytics Plugin for Xamarin iOS and Android</Title>
+    <Summary>Firebase Analytics Plugin for Xamarin iOS and Android</Summary>
+    <Description>A wrapper that allows you to use the iOS/Android Firebase Analytics bindings (by Xamarin) from your netstandard library.</Description>
+
+    <Owners>Colt Alan Bauman</Owners>
+    <Authors>Colt Alan Bauman</Authors>
+    <Copyright>Copyright 2018</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)'=='Release' ">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DebugType>pdbonly</DebugType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.55" PrivateAssets="All" />
+    <Compile Include="**\*.shared.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
+    <Compile Include="**\*.android.cs" />
+    <PackageReference Include="Plugin.CurrentActivity" Version="2.1.0.4" />
+    <PackageReference Include="Xamarin.Firebase.Analytics" Version="60.1142.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
+    <Compile Include="**\*.apple.cs" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="5.0.1" />
+  </ItemGroup>
+
+  <!--Additional item groups-->
+  <!--
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.TVOS')) ">
+    <Compile Include="**\*.tvos.cs" />
+  </ItemGroup>
+
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.WatchOS')) ">
+    <Compile Include="**\*.watchos.cs" />
+  </ItemGroup>
+
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.Mac')) ">
+    <Compile Include="**\*.mac.cs" />
+  </ItemGroup>
+
+  
+   <ItemGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
+    <Compile Include="**\*.netcore.cs" />
+  </ItemGroup>
+  
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Tizen')) ">
+    <Compile Include="**\*.tizen.cs" />
+    <PackageReference Include="Tizen.NET" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('net45')) ">
+    <Compile Include="**\*.dotnet.cs" />
+  </ItemGroup>
+  -->
+
+
+
+  <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
+</Project>
