@@ -3,6 +3,10 @@ using Foundation;
 using ObjCRuntime;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Text;
 using System.Threading.Tasks;
 using UIKit;
@@ -12,7 +16,7 @@ namespace GameCtor.FirebaseAuth.Mobile
     /// <summary>
     /// Main implementation for IFirebaseAuth
     /// </summary>
-    public class FirebaseAuthImplementation : IFirebaseAuth
+    public class FirebaseAuthService : IFirebaseAuthService
     {
         internal static IDictionary<AuthErrorCode, FirebaseAuthExceptionType> FirebaseExceptionTypeToEnumDict { get; } = new Dictionary<AuthErrorCode, FirebaseAuthExceptionType>
         {
@@ -46,45 +50,33 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// </summary>
         public IFirebaseUser CurrentUser
         {
-            get { return new FirebaseUser(Auth.DefaultInstance.CurrentUser); }
-        }
-
-        /// <summary>
-        /// Attempts to link the given phone number to the current user, or provides a verification ID if unable.
-        /// </summary>
-        /// <param name="phoneNumber">The phone number for the account the user is trying to link. Make sure to pass in a phone number with country code prefixed with plus sign ('+').</param>
-        /// <returns>PhoneNumberSignInResult containing either a verification ID or an IAuthResultWrapper</returns>
-        public async Task<PhoneNumberSignInResult> LinkPhoneNumberWithCurrentUserAsync(string phoneNumber)
-        {
-            try
-            {
-                string verificationId = await PhoneAuthProvider.DefaultInstance.VerifyPhoneNumberAsync(phoneNumber, null);
-                return new PhoneNumberSignInResult()
-                {
-                    VerificationId = verificationId
-                };
-            }
-            catch(NSErrorException ex)
-            {
-                throw GetFirebaseAuthException(ex);
-            }
+            get { return Auth.DefaultInstance.CurrentUser != null ? new FirebaseUser(Auth.DefaultInstance.CurrentUser) : null; }
         }
 
         /// <summary>
         /// Signs in the user anonymously without requiring any credential.
         /// </summary>
         /// <returns>Task of IFirebaseAuthResult with the result of the operation</returns>
-        public async Task<IFirebaseAuthResult> SignInAnonymouslyAsync()
+        public IObservable<Unit> SignInAnonymously()
         {
-            try
-            {
-                var authResult = await Auth.DefaultInstance.SignInAnonymouslyAsync();
-                return new FirebaseAuthResult(authResult);
-            }
-            catch(NSErrorException ex)
-            {
-                throw GetFirebaseAuthException(ex);
-            }
+            return Observable.Create<Unit>(
+                async observer =>
+                {
+                    AuthDataResult authResult = null;
+
+                    try
+                    {
+                        authResult = await Auth.DefaultInstance.SignInAnonymouslyAsync();
+                    }
+                    catch (NSErrorException ex)
+                    {
+                        observer.OnError(GetFirebaseAuthException(ex));
+                        return;
+                    }
+
+                    observer.OnNext(Unit.Default /*new FirebaseAuthResult(authResult)*/);
+                    observer.OnCompleted();
+                });
         }
 
         /// <summary>
@@ -92,20 +84,31 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// </summary>
         /// <param name="phoneNumber">The phone number for the account the user is signing up for or signing into. Make sure to pass in a phone number with country code prefixed with plus sign ('+').</param>
         /// <returns>PhoneNumberSignInResult containing either a verification ID or an IAuthResultWrapper</returns>
-        public async Task<PhoneNumberSignInResult> SignInWithPhoneNumberAsync(string phoneNumber)
+        public IObservable<PhoneNumberSignInResult> SignInWithPhoneNumber(string phoneNumber)
         {
-            try
-            {
-                string verificationId = await PhoneAuthProvider.DefaultInstance.VerifyPhoneNumberAsync(phoneNumber, null);
-                return new PhoneNumberSignInResult()
+            return Observable.Create<PhoneNumberSignInResult>(
+                async observer =>
                 {
-                    VerificationId = verificationId
-                };
-            }
-            catch(NSErrorException ex)
-            {
-                throw GetFirebaseAuthException(ex);
-            }
+                    string verificationId = null;
+
+                    try
+                    {
+                        verificationId = await PhoneAuthProvider.DefaultInstance.VerifyPhoneNumberAsync(phoneNumber, null);
+                    }
+                    catch (NSErrorException ex)
+                    {
+                        observer.OnError(GetFirebaseAuthException(ex));
+                        return;
+                    }
+
+                    var result = new PhoneNumberSignInResult()
+                    {
+                        VerificationId = verificationId
+                    };
+
+                    observer.OnNext(result);
+                    observer.OnCompleted();
+                });
         }
 
         /// <summary>
@@ -114,10 +117,10 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <param name="verificationId"></param>
         /// <param name="verificationCode">The 6 digit SMS-code sent to the user.</param>
         /// <returns>User account</returns>
-        public async Task<IFirebaseAuthResult> SignInWithPhoneNumberAsync(string verificationId, string verificationCode)
+        public IObservable<Unit> SignInWithPhoneNumber(string verificationId, string verificationCode)
         {
             AuthCredential credential = PhoneAuthProvider.DefaultInstance.GetCredential(verificationId, verificationCode);
-            return await SignInAsync(credential);
+            return SignInAsync(credential).ToObservable().Select(_ => Unit.Default);
         }
 
         /// <summary>
@@ -126,10 +129,10 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <param name="idToken">The ID Token from Google.</param>
         /// <param name="accessToken">The Access Token from Google.</param>
         /// <returns>User account</returns>
-        public async Task<IFirebaseAuthResult> SignInWithGoogleAsync(string idToken, string accessToken)
+        public IObservable<Unit> SignInWithGoogle(string idToken, string accessToken)
         {
             AuthCredential credential = GoogleAuthProvider.GetCredential(idToken, accessToken);
-            return await SignInAsync(credential);
+            return SignInAsync(credential).ToObservable().Select(_ => Unit.Default);
         }
 
         /// <summary>
@@ -137,10 +140,10 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// </summary>
         /// <param name="accessToken">The Access Token from Facebook.</param>
         /// <returns>User account</returns>
-        public async Task<IFirebaseAuthResult> SignInWithFacebookAsync(string accessToken)
+        public IObservable<Unit> SignInWithFacebook(string accessToken)
         {
             AuthCredential credential = FacebookAuthProvider.GetCredential(accessToken);
-            return await SignInAsync(credential);
+            return SignInAsync(credential).ToObservable().Select(_ => Unit.Default);
         }
 
         /// <summary>
@@ -149,10 +152,10 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <param name="token">The Twitter OAuth token.</param>
         /// <param name="secret">The Twitter OAuth secret.</param>
         /// <returns>User account</returns>
-        public async Task<IFirebaseAuthResult> SignInWithTwitterAsync(string token, string secret)
+        public IObservable<Unit> SignInWithTwitter(string token, string secret)
         {
             AuthCredential credential = TwitterAuthProvider.GetCredential(token, secret);
-            return await SignInAsync(credential);
+            return SignInAsync(credential).ToObservable().Select(_ => Unit.Default);
         }
 
         /// <summary>
@@ -160,10 +163,10 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// </summary>
         /// <param name="token">The GitHub OAuth access token.</param>
         /// <returns>User account</returns>
-        public async Task<IFirebaseAuthResult> SignInWithGithubAsync(string token)
+        public IObservable<Unit> SignInWithGithub(string token)
         {
             AuthCredential credential = GitHubAuthProvider.GetCredential(token);
-            return await SignInAsync(credential);
+            return SignInAsync(credential).ToObservable().Select(_ => Unit.Default);
         }
 
         /// <summary>
@@ -172,14 +175,35 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <param name="email">The user’s email address.</param>
         /// <param name="password">The user’s password.</param>
         /// <returns>User account</returns>
-        public async Task<IFirebaseAuthResult> SignInWithEmailAsync(string email, string password)
+        public IObservable<Unit> SignInWithEmail(string email, string password)
+        {
+            return Observable.Create<Unit>(
+                async observer =>
+                {
+                    AuthDataResult authResult = null;
+
+                    try
+                    {
+                        authResult = await Auth.DefaultInstance.SignInWithPasswordAsync(email, password);
+                    }
+                    catch (NSErrorException ex)
+                    {
+                        observer.OnError(GetFirebaseAuthException(ex));
+                        return;
+                    }
+
+                    observer.OnNext(Unit.Default /*new FirebaseAuthResult(authResult)*/);
+                    observer.OnCompleted();
+                });
+        }
+
+        public async Task<string> GetIdTokenAsync()
         {
             try
             {
-                AuthDataResult authResult = await Auth.DefaultInstance.SignInWithPasswordAsync(email, password);
-                return new FirebaseAuthResult(authResult);
+                return await Auth.DefaultInstance.CurrentUser.GetIdTokenAsync();
             }
-            catch(NSErrorException ex)
+            catch (NSErrorException ex)
             {
                 throw GetFirebaseAuthException(ex);
             }
@@ -223,7 +247,7 @@ namespace GameCtor.FirebaseAuth.Mobile
             }
 
             FirebaseExceptionTypeToEnumDict.TryGetValue(errorCode, out FirebaseAuthExceptionType exceptionType);
-            throw new FirebaseAuthException(ex.Message, ex, exceptionType);
+            return new FirebaseAuthException(ex.Message, ex, exceptionType);
         }
     }
 }

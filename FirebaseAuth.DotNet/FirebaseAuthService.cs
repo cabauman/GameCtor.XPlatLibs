@@ -9,37 +9,24 @@ using Newtonsoft.Json;
 
 namespace GameCtor.FirebaseAuth.DotNet
 {
-    public class FirebaseAuthService : IFirebaseAuthService
+    public class FirebaseAuthService : IFirebaseAuthService, IDisposable
     {
         private const string FIREBASE_AUTH_JSON_KEY = "FIREBASE_AUTH_JSON";
 
         private readonly FirebaseAuthProvider _authProvider;
         private readonly ILocalStorageService _localStorageService;
+        private readonly IObservable<Firebase.Auth.FirebaseAuth> _whenAuthRefreshed;
+        private readonly IDisposable _accountSavedSubscription;
 
         private FirebaseAuthLink _authLink;
-
-        public bool IsAuthenticated => _authLink != null;
-
-        public bool IsPhoneNumberLinkedToAccount => throw new NotImplementedException();
-
-        public IObservable<Firebase.Auth.FirebaseAuth> FirebaseAuthRefreshed
-        {
-            get
-            {
-                return Observable
-                    .FromEventPattern<FirebaseAuthEventArgs>(
-                        x => _authLink.FirebaseAuthRefreshed += x,
-                        x => _authLink.FirebaseAuthRefreshed -= x)
-                    .Select(x => x.EventArgs.FirebaseAuth);
-            }
-        }
 
         public FirebaseAuthService(string apiKey, ILocalStorageService localStorageService)
         {
             _authProvider = new FirebaseAuthProvider(new FirebaseConfig(apiKey));
             _localStorageService = localStorageService;
 
-            _localStorageService.Get(FIREBASE_AUTH_JSON_KEY)
+            _localStorageService
+                .Get(FIREBASE_AUTH_JSON_KEY)
                 .Where(x => x != null)
                 .Subscribe(
                     authJson =>
@@ -48,24 +35,22 @@ namespace GameCtor.FirebaseAuth.DotNet
                         _authLink = new FirebaseAuthLink(_authProvider, auth);
                     });
 
-            FirebaseAuthRefreshed
+            _whenAuthRefreshed = Observable
+                .FromEventPattern<FirebaseAuthEventArgs>(
+                    x => _authLink.FirebaseAuthRefreshed += x,
+                    x => _authLink.FirebaseAuthRefreshed -= x)
+                .Select(x => x.EventArgs.FirebaseAuth);
+
+            _accountSavedSubscription = _whenAuthRefreshed
                 .Select(firebaseAuth => SaveAccount(firebaseAuth))
                 .Subscribe();
         }
 
+        public IFirebaseUser CurrentUser => _authLink != null ? new FirebaseUser(_authLink) : null;
+
         public async Task<string> GetIdTokenAsync()
         {
             return (await _authLink.GetFreshAuthAsync()).FirebaseToken;
-        }
-
-        public IObservable<PhoneNumberVerificationResult> LinkPhoneNumberToCurrentUser(string phoneNumber)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IObservable<Unit> LinkPhoneNumberToCurrentUser(string verificationId, string verificationCode)
-        {
-            throw new NotImplementedException();
         }
 
         public IObservable<Unit> SignInAnonymously()
@@ -82,7 +67,7 @@ namespace GameCtor.FirebaseAuth.DotNet
             return SignInWithOAuth(FirebaseAuthType.Facebook, authToken);
         }
 
-        public IObservable<Unit> SignInWithGoogle(string authToken)
+        public IObservable<Unit> SignInWithGoogle(string idToken, string authToken)
         {
             return SignInWithOAuth(FirebaseAuthType.Google, authToken);
         }
@@ -106,7 +91,7 @@ namespace GameCtor.FirebaseAuth.DotNet
                 .SelectMany(authLink => SaveAccount(authLink));
         }
 
-        public IObservable<PhoneNumberVerificationResult> SignInWithPhoneNumber(string phoneNumber)
+        public IObservable<PhoneNumberSignInResult> SignInWithPhoneNumber(string phoneNumber)
         {
             throw new NotImplementedException();
         }
@@ -120,6 +105,11 @@ namespace GameCtor.FirebaseAuth.DotNet
         {
             _authLink = null;
             _localStorageService.Remove(FIREBASE_AUTH_JSON_KEY);
+        }
+
+        public void Dispose()
+        {
+            _accountSavedSubscription.Dispose();
         }
 
         private IObservable<Unit> SignInWithOAuth(FirebaseAuthType authType, string authToken)

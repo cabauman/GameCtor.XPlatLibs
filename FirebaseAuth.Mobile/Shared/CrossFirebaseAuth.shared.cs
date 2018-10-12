@@ -7,7 +7,7 @@ namespace GameCtor.FirebaseAuth.Mobile
     /// </summary>
     public static class CrossFirebaseAuth
     {
-        static Lazy<IFirebaseAuth> implementation = new Lazy<IFirebaseAuth>(() => CreateFirebaseAuth(), System.Threading.LazyThreadSafetyMode.PublicationOnly);
+        static Lazy<IFirebaseAuthService> implementation = new Lazy<IFirebaseAuthService>(() => CreateFirebaseAuth(), System.Threading.LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Gets if the plugin is supported on the current platform.
@@ -17,11 +17,11 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <summary>
         /// Current plugin implementation to use
         /// </summary>
-        public static IFirebaseAuth Current
+        public static IFirebaseAuthService Current
         {
             get
             {
-                IFirebaseAuth ret = implementation.Value;
+                IFirebaseAuthService ret = implementation.Value;
                 if (ret == null)
                 {
                     throw NotImplementedInReferenceAssembly();
@@ -30,13 +30,13 @@ namespace GameCtor.FirebaseAuth.Mobile
             }
         }
 
-        static IFirebaseAuth CreateFirebaseAuth()
+        static IFirebaseAuthService CreateFirebaseAuth()
         {
 #if NETSTANDARD1_0 || NETSTANDARD2_0
             return null;
 #else
 #pragma warning disable IDE0022 // Use expression body for methods
-            return new FirebaseAuthImplementation();
+            return new FirebaseAuthService();
 #pragma warning restore IDE0022 // Use expression body for methods
 #endif
         }

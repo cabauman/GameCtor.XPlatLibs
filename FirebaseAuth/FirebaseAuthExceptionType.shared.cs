@@ -1,4 +1,4 @@
-﻿namespace GameCtor.FirebaseAuth.Mobile
+﻿namespace GameCtor.FirebaseAuth
 {
     /// <summary>
     /// Common exception types used by Firebase Auth.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GameCtor.FirebaseAuth.Mobile
+namespace GameCtor.FirebaseAuth
 {
     public class FirebaseAuthException : Exception
     {

@@ -19,13 +19,11 @@
     <PackageVersion>1.0.3.0</PackageVersion>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
-    <LangVersion>default</LangVersion>
+    <LangVersion>7.1</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
 
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-
-    <LangVersion>7.1</LangVersion>
 
     <PackageProjectUrl>https://github.com/cabauman/GameCtor.XPlatLibs</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cabauman/GameCtor.XPlatLibs</RepositoryUrl>
@@ -54,7 +52,6 @@
 
   <ItemGroup>
     <Compile Include="**\*.shared.cs" />
-    <Compile Include="FirebaseAuthService.cs" />
     <ProjectReference Include="..\FirebaseAuth\FirebaseAuth.csproj" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.47" PrivateAssets="All" />
     <PackageReference Include="System.Reactive" Version="4.1.0" />

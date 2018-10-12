@@ -6,15 +6,11 @@ namespace GameCtor.FirebaseAuth
 {
     public interface IFirebaseAuthService
     {
-        bool IsAuthenticated { get; }
-
-        bool IsPhoneNumberLinkedToAccount { get; }
+        IFirebaseUser CurrentUser { get; }
 
         Task<string> GetIdTokenAsync();
 
-        IObservable<Unit> SignInWithGoogle(string accessToken);
-
-        //IObservable<Unit> SignInWithGoogle(string idToken, string accessToken);
+        IObservable<Unit> SignInWithGoogle(string idToken, string accessToken);
 
         IObservable<Unit> SignInWithFacebook(string accessToken);
 
@@ -24,15 +20,11 @@ namespace GameCtor.FirebaseAuth
 
         IObservable<Unit> SignInWithEmail(string email, string password);
 
-        IObservable<PhoneNumberVerificationResult> SignInWithPhoneNumber(string phoneNumber);
+        IObservable<PhoneNumberSignInResult> SignInWithPhoneNumber(string phoneNumber);
 
         IObservable<Unit> SignInWithPhoneNumber(string verificationId, string verificationCode);
 
         IObservable<Unit> SignInAnonymously();
-
-        IObservable<PhoneNumberVerificationResult> LinkPhoneNumberToCurrentUser(string phoneNumber);
-
-        IObservable<Unit> LinkPhoneNumberToCurrentUser(string verificationId, string verificationCode);
 
         void SignOut();
     }

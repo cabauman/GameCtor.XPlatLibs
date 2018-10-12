@@ -1,7 +1,12 @@
 ﻿using Firebase;
 using Firebase.Auth;
+using Java.Util.Concurrent;
+using Plugin.CurrentActivity;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace GameCtor.FirebaseAuth.Mobile
@@ -29,7 +34,41 @@ namespace GameCtor.FirebaseAuth.Mobile
 
         public string ProviderId => _user.ProviderId;
 
+        public IList<string> Providers => _user.Providers;
+
         public string Uid => _user.Uid;
+
+        /// <summary>
+        /// Attempts to link the given phone number to the user, or provides a verification ID if unable.
+        /// </summary>
+        /// <param name="phoneNumber">The phone number the user is trying to link. Make sure to pass in a phone number with country code prefixed with plus sign ('+').</param>
+        /// <returns>PhoneNumberSignInResult containing either a verification ID or an IAuthResultWrapper</returns>
+        public IObservable<PhoneNumberSignInResult> LinkWithPhoneNumber(string phoneNumber)
+        {
+            var completionHandler = new PhoneNumberVerificationCallbackWrapper();
+            PhoneAuthProvider.Instance.VerifyPhoneNumber(phoneNumber, 60, TimeUnit.Seconds, CrossCurrentActivity.Current.Activity, completionHandler);
+
+            return completionHandler.Verify()
+                .SelectMany(
+                    verificationResult =>
+                    {
+                        if (verificationResult.AuthCredential != null)
+                        {
+                            return LinkWithCredentialAsync(verificationResult.AuthCredential)
+                                .ToObservable()
+                                .Select(authResult => new PhoneNumberSignInResult() { AuthResult = authResult });
+                        }
+                        else
+                        {
+                            var signInResult = new PhoneNumberSignInResult()
+                            {
+                                VerificationId = verificationResult.VerificationId
+                            };
+
+                            return Observable.Return(signInResult);
+                        }
+                    });
+        }
 
         /// <summary>
         /// Attaches the given phone credentials to the user. This allows the user to sign in to this account in the future with credentials for such provider.
@@ -37,10 +76,11 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <param name="verificationId">The verification ID obtained by calling VerifyPhoneNumber.</param>
         /// <param name="verificationCode">The 6 digit SMS-code sent to the user.</param>
         /// <returns>Updated current account</returns>
-        public async Task<IFirebaseAuthResult> LinkWithPhoneNumberAsync(string verificationId, string verificationCode)
+        public IObservable<IFirebaseAuthResult> LinkWithPhoneNumber(string verificationId, string verificationCode)
         {
             AuthCredential credential = PhoneAuthProvider.GetCredential(verificationId, verificationCode);
-            return await LinkWithCredentialAsync(credential);
+            return _user.LinkWithCredentialAsync(credential).ToObservable().Select(x => new FirebaseAuthResult(x));
+            //return LinkWithCredentialAsync(credential).ToObservable();
         }
 
         /// <summary>
@@ -49,10 +89,10 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <param name="idToken"></param>
         /// <param name="accessToken"></param>
         /// <returns>Updated current account</returns>
-        public async Task<IFirebaseAuthResult> LinkWithGoogleAsync(string idToken, string accessToken)
+        public IObservable<IFirebaseAuthResult> LinkWithGoogle(string idToken, string accessToken)
         {
             AuthCredential credential = GoogleAuthProvider.GetCredential(idToken, accessToken);
-            return await LinkWithCredentialAsync(credential);
+            return LinkWithCredentialAsync(credential).ToObservable();
         }
 
         /// <summary>
@@ -60,10 +100,10 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// </summary>
         /// <param name="accessToken">The Access Token from Facebook.</param>
         /// <returns>Updated current account</returns>
-        public async Task<IFirebaseAuthResult> LinkWithFacebookAsync(string accessToken)
+        public IObservable<IFirebaseAuthResult> LinkWithFacebook(string accessToken)
         {
             AuthCredential credential = FacebookAuthProvider.GetCredential(accessToken);
-            return await LinkWithCredentialAsync(credential);
+            return LinkWithCredentialAsync(credential).ToObservable();
         }
 
         /// <summary>
@@ -72,10 +112,10 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <param name="token">The Twitter OAuth token.</param>
         /// <param name="secret">The Twitter OAuth secret.</param>
         /// <returns>Updated current account</returns>
-        public async Task<IFirebaseAuthResult> LinkWithTwitterAsync(string token, string secret)
+        public IObservable<IFirebaseAuthResult> LinkWithTwitter(string token, string secret)
         {
             AuthCredential credential = TwitterAuthProvider.GetCredential(token, secret);
-            return await LinkWithCredentialAsync(credential);
+            return LinkWithCredentialAsync(credential).ToObservable();
         }
 
         /// <summary>
@@ -83,10 +123,10 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// </summary>
         /// <param name="token">The GitHub OAuth access token.</param>
         /// <returns>Updated current account</returns>
-        public async Task<IFirebaseAuthResult> LinkWithGithubAsync(string token)
+        public IObservable<IFirebaseAuthResult> LinkWithGithub(string token)
         {
             AuthCredential credential = GithubAuthProvider.GetCredential(token);
-            return await LinkWithCredentialAsync(credential);
+            return LinkWithCredentialAsync(credential).ToObservable();
         }
 
         /// <summary>
@@ -95,28 +135,48 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <param name="email">The user’s email address.</param>
         /// <param name="password">The user’s password.</param>
         /// <returns>Updated current account</returns>
-        public async Task<IFirebaseAuthResult> LinkWithEmailAsync(string email, string password)
+        public IObservable<IFirebaseAuthResult> LinkWithEmail(string email, string password)
         {
             AuthCredential credential = EmailAuthProvider.GetCredential(email, password);
-            return await LinkWithCredentialAsync(credential);
+            return LinkWithCredentialAsync(credential).ToObservable();
         }
 
         /// <summary>
         /// Detaches credentials from a given provider type from this user. This prevents the user from signing in to this account in the future with credentials from such provider.
         /// </summary>
         /// <param name="providerId">A unique identifier of the type of provider to be unlinked.</param>
-        /// <returns>Task of IUserWrapper</returns>
-        public async Task<IFirebaseUser> UnlinkAsync(string providerId)
+        /// <returns>Task of IFirebaseUser</returns>
+        public IObservable<IFirebaseUser> Unlink(string providerId)
         {
-            try
-            {
-                IAuthResult authResult = await _user.UnlinkAsync(providerId);
-                return new FirebaseUser(authResult.User);
-            }
-            catch(FirebaseException ex)
-            {
-                throw GetFirebaseAuthException(ex);
-            }
+            return Observable.Create<IFirebaseUser>(
+                async observer =>
+                {
+                    IAuthResult authResult = null;
+
+                    try
+                    {
+                        authResult = await _user.UnlinkAsync(providerId);
+                    }
+                    catch(Exception ex)
+                    {
+                        observer.OnError(GetFirebaseAuthException(ex));
+                        return;
+                    }
+
+                    observer.OnNext(new FirebaseUser(authResult.User));
+                    observer.OnCompleted();
+                });
+
+            //return Observable.Create<IFirebaseUser>(
+            //    observer =>
+            //    {
+            //        var subscription = _user.UnlinkAsync(providerId)
+            //            .ToObservable()
+            //            .Select(authResult => new FirebaseUser(authResult.User))
+            //            .Subscribe(x => observer.OnNext(x), ex => observer.OnError(GetFirebaseAuthException(ex)));
+
+            //        return new CompositeDisposable(subscription);
+            //    });
         }
 
         /// <summary>
@@ -139,21 +199,35 @@ namespace GameCtor.FirebaseAuth.Mobile
 
         private async Task<IFirebaseAuthResult> LinkWithCredentialAsync(AuthCredential credential)
         {
+            IAuthResult authResult = null;
+
             try
             {
-                IAuthResult authResult = await _user.LinkWithCredentialAsync(credential);
-                return new FirebaseAuthResult(authResult);
+                authResult = await _user.LinkWithCredentialAsync(credential);
             }
-            catch(FirebaseException ex)
+            catch(Firebase.Auth.FirebaseAuthException ex)
             {
+                Console.WriteLine(ex.Message);
                 throw GetFirebaseAuthException(ex);
             }
+            catch(RuntimeWrappedException ex)
+            {
+                var authEx = ex.WrappedException as Firebase.Auth.FirebaseAuthException;
+                throw GetFirebaseAuthException(ex);
+            }
+            catch
+            {
+                Console.WriteLine("Uh oh");
+                throw;
+            }
+
+            return new FirebaseAuthResult(authResult);
         }
 
         private FirebaseAuthException GetFirebaseAuthException(Exception ex)
         {
-            FirebaseAuthImplementation.FirebaseExceptionTypeToEnumDict.TryGetValue(ex.GetType(), out FirebaseAuthExceptionType exceptionType);
-            throw new FirebaseAuthException(ex.Message, ex, exceptionType);
+            FirebaseAuthService.FirebaseExceptionTypeToEnumDict.TryGetValue(ex.GetType(), out FirebaseAuthExceptionType exceptionType);
+            return new FirebaseAuthException(ex.Message, ex, exceptionType);
         }
     }
 }

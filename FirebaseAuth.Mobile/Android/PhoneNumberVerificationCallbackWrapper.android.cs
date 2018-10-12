@@ -1,52 +1,54 @@
 ﻿using Firebase;
 using Firebase.Auth;
-using System.Threading.Tasks;
+using System;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace GameCtor.FirebaseAuth.Mobile
 {
-    public partial class FirebaseAuthImplementation
+    internal class PhoneNumberVerificationCallbackWrapper : PhoneAuthProvider.OnVerificationStateChangedCallbacks
     {
-        private class PhoneNumberVerificationCallbackWrapper : PhoneAuthProvider.OnVerificationStateChangedCallbacks
+        private Subject<PhoneNumberVerificationResult> _subject = new Subject<PhoneNumberVerificationResult>();
+
+        public IObservable<PhoneNumberVerificationResult> Verify()
         {
-            private TaskCompletionSource<PhoneNumberVerificationResult> _tcs;
-
-            public Task<PhoneNumberVerificationResult> Verify()
-            {
-                _tcs = new TaskCompletionSource<PhoneNumberVerificationResult>();
-                return _tcs.Task;
-            }
-
-            public override void OnVerificationCompleted(PhoneAuthCredential credential)
-            {
-                var result = new PhoneNumberVerificationResult
-                {
-                    AuthCredential = credential
-                };
-
-                _tcs.SetResult(result);
-            }
-
-            public override void OnVerificationFailed(FirebaseException exception)
-            {
-                _tcs.SetException(exception);
-            }
-
-            public override void OnCodeSent(string verificationId, PhoneAuthProvider.ForceResendingToken forceResendingToken)
-            {
-                var result = new PhoneNumberVerificationResult
-                {
-                    VerificationId = verificationId
-                };
-
-                _tcs.SetResult(result);
-            }
+            return _subject.AsObservable();
         }
 
-        private class PhoneNumberVerificationResult
+        public override void OnVerificationCompleted(PhoneAuthCredential credential)
         {
-            public AuthCredential AuthCredential { get; set; }
+            var result = new PhoneNumberVerificationResult
+            {
+                AuthCredential = credential
+            };
 
-            public string VerificationId { get; set; }
+            _subject.OnNext(result);
+            _subject.OnCompleted();
         }
+
+        public override void OnVerificationFailed(FirebaseException exception)
+        {
+            FirebaseAuthService.FirebaseExceptionTypeToEnumDict.TryGetValue(exception.GetType(), out FirebaseAuthExceptionType exceptionType);
+            var customException = new FirebaseAuthException(exception.Message, exception, exceptionType);
+            _subject.OnError(customException);
+        }
+
+        public override void OnCodeSent(string verificationId, PhoneAuthProvider.ForceResendingToken forceResendingToken)
+        {
+            var result = new PhoneNumberVerificationResult
+            {
+                VerificationId = verificationId
+            };
+
+            _subject.OnNext(result);
+            _subject.OnCompleted();
+        }
+    }
+
+    internal class PhoneNumberVerificationResult
+    {
+        public AuthCredential AuthCredential { get; set; }
+
+        public string VerificationId { get; set; }
     }
 }
