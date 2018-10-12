@@ -5,14 +5,19 @@ using System.Reactive;
 namespace GameCtor.Repository
 {
     public interface IRepository<T>
-        where T : IModel
     {
         IObservable<Unit> Add(T item);
 
-        IObservable<Unit> Update(T item);
+        IObservable<Unit> Add(IEnumerable<T> items);
+
+        IObservable<Unit> Upsert(T item);
+
+        IObservable<Unit> Upsert(IEnumerable<T> items);
 
         IObservable<Unit> Delete(string id);
-         
+
+        IObservable<Unit> Delete(IEnumerable<T> items);
+
         IObservable<T> GetItem(string id);
 
         IObservable<IEnumerable<T>> GetItems(bool fetchOnline = false);

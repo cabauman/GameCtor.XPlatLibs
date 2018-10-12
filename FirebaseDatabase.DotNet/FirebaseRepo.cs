@@ -15,6 +15,11 @@ namespace GameCtor.FirebaseDatabase.DotNet
     {
         private ChildQuery _childQuery;
 
+        public FirebaseRepo(FirebaseClient client, string path)
+        {
+            _childQuery = client.Child(path);
+        }
+
         public IObservable<Unit> Add(T item)
         {
             return _childQuery
@@ -31,6 +36,21 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .ToObservable();
         }
 
+        public IObservable<Unit> Upsert(T item)
+        {
+            return _childQuery
+                .Child(item.Id)
+                .PutAsync(item)
+                .ToObservable();
+        }
+
+        public IObservable<Unit> Upsert(IEnumerable<T> items)
+        {
+            return _childQuery
+                .PatchAsync(items.ToDictionary(x => x.Id))
+                .ToObservable();
+        }
+
         public IObservable<Unit> Delete(string id)
         {
             return _childQuery
@@ -39,9 +59,17 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .ToObservable();
         }
 
+        public IObservable<Unit> Delete(IEnumerable<T> items)
+        {
+            return _childQuery
+                .PatchAsync(items.ToDictionary(x => x.Id, x => default(string)))
+                .ToObservable();
+        }
+
         public IObservable<T> GetItem(string id)
         {
             return _childQuery
+                .Child(id)
                 .OnceSingleAsync<T>()
                 .ToObservable()
                 .Do(item => item.Id = id);
@@ -58,29 +86,22 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .ToList();
         }
 
-        public IObservable<RepoItemCollection<T>> GetItems(int cursor = 0, int count = 1000, bool fetchOnline = false)
-        {
-            return _childQuery
-                .OrderByKey()
-                .StartAt(cursor.ToString())
-                .LimitToFirst(count)
-                .OnceAsync<T>()
-                .ToObservable()
-                .SelectMany(x => x)
-                .Skip(cursor > -1 ? 1 : 0)
-                .Do(MapKeyToId)
-                .Select(x => x.Object)
-                .ToList()
-                .Select(x => new RepoItemCollection<T>(int.Parse(x[x.Count - 1].Id), x));
-        }
-
-        public IObservable<Unit> Update(T item)
-        {
-            return _childQuery
-                .Child(item.Id)
-                .PutAsync(item)
-                .ToObservable();
-        }
+        // Will handle paging at a later time
+        //public IObservable<RepoItemCollection<T>> GetItems(int cursor = 0, int count = 1000, bool fetchOnline = false)
+        //{
+        //    return _childQuery
+        //        .OrderByKey()
+        //        .StartAt(cursor.ToString())
+        //        .LimitToFirst(count)
+        //        .OnceAsync<T>()
+        //        .ToObservable()
+        //        .SelectMany(x => x)
+        //        .Skip(cursor > -1 ? 1 : 0)
+        //        .Do(MapKeyToId)
+        //        .Select(x => x.Object)
+        //        .ToList()
+        //        .Select(x => new RepoItemCollection<T>(int.Parse(x[x.Count - 1].Id), x));
+        //}
 
         public IObservable<T> Observe()
         {

@@ -24,8 +24,15 @@ namespace GameCtor.FirebaseDatabase.DotNet
             // by adding a filename modifier; which is what we're using the "key" parameter for.
             _baseQuery = client.Child(path);
             _realtimeDb = _baseQuery
-                .AsRealtimeDatabase<T>(key, string.Empty, StreamingOptions.Everything, InitialPullStrategy.MissingOnly, true);
+                .AsRealtimeDatabase<T>(key, string.Empty, StreamingOptions.Everything, InitialPullStrategy.None, true);
+
+            SyncExceptionThrown = Observable
+                .FromEventPattern<ExceptionEventArgs>(
+                    h => _realtimeDb.SyncExceptionThrown += h,
+                    h => _realtimeDb.SyncExceptionThrown -= h);
         }
+
+        public IObservable<EventPattern<ExceptionEventArgs>> SyncExceptionThrown { get; }
 
         public IObservable<Unit> Add(T item)
         {
@@ -44,67 +51,10 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .Concat(_realtimeDb.PullAsync().ToObservable());
         }
 
-        public IObservable<Unit> Delete(string id)
-        {
-            return Observable
-                .Start(() => _realtimeDb.Delete(id));
-        }
-
-        public IObservable<T> GetItem(string id)
-        {
-            return Observable
-                .Start(() => _realtimeDb.Database[id].Deserialize<T>());
-        }
-
-        public IObservable<IEnumerable<T>> GetItems(bool fetchOnline = false)
-        {
-            return Observable
-                .Return(fetchOnline ? Pull() : Observable.Return(Unit.Default))
-                .SelectMany(x => x)
-                .SelectMany(_ => _realtimeDb.Once())
-                .Do(MapKeyToId)
-                .Select(x => x.Object)
-                .ToList();
-        }
-
-        public IObservable<RepoItemCollection<T>> GetItems(int cursor = 0, int count = 1000, bool forceRefresh = false)
-        {
-            return Observable
-                .Return(forceRefresh ? Pull() : Observable.Return(Unit.Default))
-                .SelectMany(x => x)
-                .Select(_ => _realtimeDb.Database.Values)
-                .Do(
-                    x =>
-                    {
-                        cursor += count;
-                        if(cursor >= x.Count)
-                        {
-                            cursor = -1;
-                        };
-                    })
-                .SelectMany(x => x)
-                .Skip(cursor)
-                .Take(count)
-                .Where(kvp => !string.IsNullOrEmpty(kvp.Data) && kvp.Data != "null" && !kvp.IsPartial)
-                .Select(x => x.Deserialize<T>())
-                .ToList()
-                .Select(x => new RepoItemCollection<T>(cursor, x));
-        }
-
-        public IObservable<Unit> Update(T item)
+        public IObservable<Unit> Upsert(T item)
         {
             return Observable
                 .Start(() => _realtimeDb.Put(item.Id, item));
-        }
-
-        public IObservable<T> Observe()
-        {
-            _realtimeDb.SyncExceptionThrown += (s, ex) => Console.WriteLine(ex.Exception);
-
-            return _realtimeDb
-                .AsObservable()
-                .Do(MapKeyToId)
-                .Select(x => x.Object);
         }
 
         public IObservable<Unit> Upsert(IEnumerable<T> items)
@@ -116,7 +66,12 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .Concat(_realtimeDb.PullAsync().ToObservable());
         }
 
-        // May need to modify Json options for this to work right.
+        public IObservable<Unit> Delete(string id)
+        {
+            return Observable
+                .Start(() => _realtimeDb.Delete(id));
+        }
+
         public IObservable<Unit> Delete(IEnumerable<T> items)
         {
             // Doesn't work offline. Need offline solution.
@@ -124,6 +79,78 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .PatchAsync(items.ToDictionary(x => x.Id, x => default(string)))
                 .ToObservable()
                 .Concat(_realtimeDb.PullAsync().ToObservable());
+        }
+
+        public IObservable<T> GetItem(string id)
+        {
+            return Observable
+                .Start(() => _realtimeDb.Database[id].Deserialize<T>());
+        }
+
+        public IObservable<IEnumerable<T>> GetItems(bool fetchOnline = false)
+        {
+            return Observable
+                .Return(fetchOnline || _realtimeDb.Database.Count == 0 ? Pull() : Observable.Return(Unit.Default))
+                .SelectMany(x => x)
+                .SelectMany(_ => _realtimeDb.Once())
+                .Do(MapKeyToId)
+                .Select(x => x.Object)
+                .ToList();
+        }
+
+        // Will handle paging at a later time
+        //public IObservable<RepoItemCollection<T>> GetItems(int cursor = 0, int count = 1000, bool fetchOnline = false)
+        //{
+        //    return Observable
+        //        .Return(fetchOnline || _realtimeDb.Database.Count == 0 ? Pull() : Observable.Return(Unit.Default))
+        //        .SelectMany(x => x)
+        //        .Select(_ => _realtimeDb.Database.Values)
+        //        .Do(
+        //            x =>
+        //            {
+        //                cursor += count;
+        //                if(cursor >= x.Count)
+        //                {
+        //                    cursor = -1;
+        //                };
+        //            })
+        //        .SelectMany(x => x)
+        //        .Skip(cursor)
+        //        .Take(count)
+        //        .Where(kvp => !string.IsNullOrEmpty(kvp.Data) && kvp.Data != "null" && !kvp.IsPartial)
+        //        .Select(x => x.Deserialize<T>())
+        //        .ToList()
+        //        .Select(x => new RepoItemCollection<T>(cursor, x));
+        //}
+
+        private static readonly Dictionary<Firebase.Database.Streaming.FirebaseEventSource, FirebaseEventSource> EventSourceMap = new Dictionary<Firebase.Database.Streaming.FirebaseEventSource, FirebaseEventSource>
+        {
+            { Firebase.Database.Streaming.FirebaseEventSource.Online, FirebaseEventSource.Online },
+            { Firebase.Database.Streaming.FirebaseEventSource.OnlineInitial, FirebaseEventSource.Online },
+            { Firebase.Database.Streaming.FirebaseEventSource.OnlinePull, FirebaseEventSource.Online },
+            { Firebase.Database.Streaming.FirebaseEventSource.OnlinePush, FirebaseEventSource.Online },
+            { Firebase.Database.Streaming.FirebaseEventSource.OnlineStream, FirebaseEventSource.Online },
+            { Firebase.Database.Streaming.FirebaseEventSource.Offline, FirebaseEventSource.Offline },
+        };
+
+        private static readonly Dictionary<Firebase.Database.Streaming.FirebaseEventType, FirebaseEventType> EventTypeMap = new Dictionary<Firebase.Database.Streaming.FirebaseEventType, FirebaseEventType>
+        {
+            { Firebase.Database.Streaming.FirebaseEventType.InsertOrUpdate, FirebaseEventType.AddOrUpdate },
+            { Firebase.Database.Streaming.FirebaseEventType.Delete, FirebaseEventType.Delete },
+        };
+
+        public IObservable<FirebaseEvent<T>> Observe()
+        {
+            return _realtimeDb
+                .AsObservable()
+                .Do(MapKeyToId)
+                .Select(
+                    x =>
+                    {
+                        EventSourceMap.TryGetValue(x.EventSource, out var eventSource);
+                        EventTypeMap.TryGetValue(x.EventType, out var eventType);
+                        return new FirebaseEvent<T>(x.Key, x.Object, eventSource, eventType);
+                    });
         }
 
         private IObservable<Unit> Pull()
