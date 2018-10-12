@@ -11,8 +11,6 @@ namespace GameCtor.XamarinAuth
     {
         private string _provider;
         private Subject<Unit> _authFlowTriggered;
-        private OAuth2Config _googleConfig;
-        private OAuth2Config _facebookConfig;
 
         public AuthService()
         {
@@ -54,7 +52,7 @@ namespace GameCtor.XamarinAuth
 
         public IObservable<Exception> SignInFailed { get; private set; }
 
-        public void InitGoogleConfig(
+        public void TriggerGoogleAuthFlow(
             string clientId,
             string clientSecret,
             string scope,
@@ -62,18 +60,11 @@ namespace GameCtor.XamarinAuth
             string redirectUrl,
             string accessTokenUrl)
         {
-            _googleConfig = new OAuth2Config()
-            {
-                ClientId = clientId,
-                ClientSecret = clientSecret,
-                Scope = scope,
-                AuthorizeUrl = authorizeUrl,
-                RedirectUrl = redirectUrl,
-                AccessTokenUrl = accessTokenUrl
-            };
+            _provider = "google";
+            TriggerOAuth2Flow(clientId, clientSecret, scope, authorizeUrl, redirectUrl, accessTokenUrl);
         }
 
-        public void InitFacebookConfig(
+        public void TriggerFacebookAuthFlow(
             string clientId,
             string clientSecret,
             string scope,
@@ -81,28 +72,40 @@ namespace GameCtor.XamarinAuth
             string redirectUrl,
             string accessTokenUrl)
         {
-            _facebookConfig = new OAuth2Config()
-            {
-                ClientId = clientId,
-                ClientSecret = clientSecret,
-                Scope = scope,
-                AuthorizeUrl = authorizeUrl,
-                RedirectUrl = redirectUrl,
-                AccessTokenUrl = accessTokenUrl
-            };
+            _provider = "facebook";
+            TriggerOAuth2Flow(clientId, clientSecret, scope, authorizeUrl, redirectUrl, accessTokenUrl);
         }
 
-        private void TriggerOAuth2Flow(OAuth2Config config)
+        public void TriggerOAuth2Flow(
+            string clientId,
+            string clientSecret,
+            string scope,
+            string authorizeUrl,
+            string redirectUrl,
+            string accessTokenUrl)
         {
-            AuthenticationState.Authenticator = new OAuth2Authenticator(
-                config.ClientId,
-                config.ClientSecret,
-                config.Scope,
-                new Uri(config.AuthorizeUrl),
-                new Uri(config.RedirectUrl),
-                new Uri(config.AccessTokenUrl),
-                getUsernameAsync: null,
-                isUsingNativeUI: true);
+            if(string.IsNullOrEmpty(accessTokenUrl))
+            {
+                AuthenticationState.Authenticator = new OAuth2Authenticator(
+                    clientId,
+                    scope,
+                    new Uri(authorizeUrl),
+                    new Uri(redirectUrl),
+                    getUsernameAsync: null,
+                    isUsingNativeUI: true);
+            }
+            else
+            {
+                AuthenticationState.Authenticator = new OAuth2Authenticator(
+                    clientId,
+                    clientSecret,
+                    scope,
+                    new Uri(authorizeUrl),
+                    new Uri(redirectUrl),
+                    new Uri(accessTokenUrl),
+                    getUsernameAsync: null,
+                    isUsingNativeUI: true);
+            }
 
             _authFlowTriggered.OnNext(Unit.Default);
             var presenter = new Xamarin.Auth.Presenters.OAuthLoginPresenter();
@@ -124,16 +127,6 @@ namespace GameCtor.XamarinAuth
             _authFlowTriggered.OnNext(Unit.Default);
             var presenter = new Xamarin.Auth.Presenters.OAuthLoginPresenter();
             presenter.Login(AuthenticationState.Authenticator);
-        }
-
-        public void TriggerGoogleAuthFlow()
-        {
-            TriggerOAuth2Flow(_googleConfig);
-        }
-
-        public void TriggerFacebookAuthFlow()
-        {
-            TriggerOAuth2Flow(_facebookConfig);
         }
 
         public void GetAccountInfo(string provider)

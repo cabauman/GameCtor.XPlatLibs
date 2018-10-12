@@ -11,8 +11,20 @@ namespace GameCtor.XamarinAuth
 
         IObservable<Exception> SignInFailed { get; }
 
-        void TriggerGoogleAuthFlow();
+        void TriggerGoogleAuthFlow(
+            string clientId,
+            string clientSecret,
+            string scope,
+            string authorizeUrl,
+            string redirectUrl,
+            string accessTokenUrl);
 
-        void TriggerFacebookAuthFlow();
+        void TriggerFacebookAuthFlow(
+            string clientId,
+            string clientSecret,
+            string scope,
+            string authorizeUrl,
+            string redirectUrl,
+            string accessTokenUrl);
     }
 }
