@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
-using System.Threading;
-using System.Threading.Tasks;
+using Firebase.Storage;
 
 namespace GameCtor.FirebaseStorage.DotNet
 {
-    public class FirebaseStorageService
+    public class FirebaseStorageService : IFirebaseStorageService
     {
         Firebase.Storage.FirebaseStorage _storage;
 
@@ -32,11 +32,39 @@ namespace GameCtor.FirebaseStorage.DotNet
                 .ToObservable();
         }
 
-        public async Task Upload(string path, Stream stream, CancellationToken ct, string mimeType = null)
+        public IObservable<Either<int, string>> Upload(
+            string path,
+            Stream stream,
+            string mimeType = null)
         {
-            await _storage
-                .Child(path)
-                .PutAsync(stream, ct, mimeType);
+            return Observable.Create<Either<int, string>>(
+                async (observer, ct) =>
+                {
+                    var task = _storage
+                        .Child(path)
+                        .PutAsync(stream, ct, mimeType);
+
+                    var progressSubscription = Observable.FromEventPattern<FirebaseStorageProgress>(
+                        h => task.Progress.ProgressChanged += h,
+                        h => task.Progress.ProgressChanged -= h)
+                            .Select(x => x.EventArgs.Percentage)
+                            .Subscribe(x => observer.OnNext(Either.Left<int, string>(x)));
+
+                    try
+                    {
+                        observer.OnNext(Either.Right<int, string>(await task));
+                        observer.OnCompleted();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        observer.OnError(ex);
+                    }
+
+                    return progressSubscription;
+                });
         }
     }
 }

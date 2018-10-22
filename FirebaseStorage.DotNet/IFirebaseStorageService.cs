@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reactive;
 using System.Threading;
-using System.Threading.Tasks;
+using Firebase.Storage;
 
 namespace GameCtor.FirebaseStorage.DotNet
 {
@@ -12,8 +12,10 @@ namespace GameCtor.FirebaseStorage.DotNet
 
         IObservable<Unit> Delete(string path);
 
-        Task Upload(string path, Stream stream);
+        IObservable<Either<int, string>> Upload(string path, Stream stream, string mimeType = null);
 
-        Task Upload(string path, Stream stream, CancellationToken ct, string mimeType = null);
+        //FirebaseStorageTask Upload(string path, Stream stream);
+
+        //FirebaseStorageTask Upload(string path, Stream stream, CancellationToken ct, string mimeType = null);
     }
 }
