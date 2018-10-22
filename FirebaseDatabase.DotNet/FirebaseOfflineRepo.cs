@@ -17,14 +17,19 @@ namespace GameCtor.FirebaseDatabase.DotNet
         private readonly RealtimeDatabase<T> _realtimeDb;
         private readonly ChildQuery _baseQuery;
 
-        public FirebaseOfflineRepo(FirebaseClient client, string path, string key = "")
+        public FirebaseOfflineRepo(
+            FirebaseClient client,
+            string path,
+            string key = "",
+            StreamingOptions streaming = StreamingOptions.None,
+            InitialPullStrategy initialPull = InitialPullStrategy.Everything)
         {
             // The offline database filename is named after type T.
             // So, if you have more than one list of type T objects, you need to differentiate it
             // by adding a filename modifier; which is what we're using the "key" parameter for.
             _baseQuery = client.Child(path);
             _realtimeDb = _baseQuery
-                .AsRealtimeDatabase<T>(key, string.Empty, StreamingOptions.Everything, InitialPullStrategy.None, true);
+                .AsRealtimeDatabase<T>(key, string.Empty, streaming, initialPull, true);
 
             SyncExceptionThrown = Observable
                 .FromEventPattern<ExceptionEventArgs>(
@@ -54,7 +59,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
         public IObservable<Unit> Upsert(T item)
         {
             return Observable
-                .Start(() => _realtimeDb.Put(item.Id, item));
+                .Start(() => _realtimeDb.Patch(item.Id, item));
         }
 
         public IObservable<Unit> Upsert(IEnumerable<T> items)
@@ -84,7 +89,12 @@ namespace GameCtor.FirebaseDatabase.DotNet
         public IObservable<T> GetItem(string id)
         {
             return Observable
-                .Start(() => _realtimeDb.Database[id].Deserialize<T>());
+                .Start(
+                    () =>
+                    {
+                        _realtimeDb.Database.TryGetValue(id, out OfflineEntry item);
+                        return item?.Deserialize<T>();
+                    });
         }
 
         public IObservable<IEnumerable<T>> GetItems(bool fetchOnline = false)
