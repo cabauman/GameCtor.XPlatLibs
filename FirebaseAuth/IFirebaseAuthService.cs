@@ -8,6 +8,8 @@ namespace GameCtor.FirebaseAuth
     {
         IFirebaseUser CurrentUser { get; }
 
+        IObservable<bool> IsAuthenticated { get; }
+
         Task<string> GetIdTokenAsync();
 
         IObservable<Unit> SignInWithGoogle(string idToken, string accessToken);

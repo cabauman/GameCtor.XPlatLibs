@@ -15,8 +15,9 @@ namespace GameCtor.FirebaseAuth.DotNet
 
         private readonly FirebaseAuthProvider _authProvider;
         private readonly ILocalStorageService _localStorageService;
-        private readonly IObservable<Firebase.Auth.FirebaseAuth> _whenAuthRefreshed;
-        private readonly IDisposable _accountSavedSubscription;
+
+        private IObservable<Firebase.Auth.FirebaseAuth> _whenAuthRefreshed;
+        private IDisposable _accountSavedSubscription;
 
         private FirebaseAuthLink _authLink;
 
@@ -24,29 +25,71 @@ namespace GameCtor.FirebaseAuth.DotNet
         {
             _authProvider = new FirebaseAuthProvider(new FirebaseConfig(apiKey));
             _localStorageService = localStorageService;
-
-            _localStorageService
-                .Get(FIREBASE_AUTH_JSON_KEY)
-                .Where(x => x != null)
-                .Subscribe(
-                    authJson =>
-                    {
-                        var auth = JsonConvert.DeserializeObject<Firebase.Auth.FirebaseAuth>(authJson);
-                        _authLink = new FirebaseAuthLink(_authProvider, auth);
-                    });
-
-            _whenAuthRefreshed = Observable
-                .FromEventPattern<FirebaseAuthEventArgs>(
-                    x => _authLink.FirebaseAuthRefreshed += x,
-                    x => _authLink.FirebaseAuthRefreshed -= x)
-                .Select(x => x.EventArgs.FirebaseAuth);
-
-            _accountSavedSubscription = _whenAuthRefreshed
-                .Select(firebaseAuth => SaveAccount(firebaseAuth))
-                .Subscribe();
         }
 
         public IFirebaseUser CurrentUser => _authLink != null ? new FirebaseUser(_authLink) : null;
+
+        public FirebaseAuthLink AuthLink
+        {
+            get
+            {
+                return _authLink;
+            }
+
+            set
+            {
+                _accountSavedSubscription?.Dispose();
+
+                if(value == null) return;
+
+                _authLink = value;
+
+                _whenAuthRefreshed = Observable
+                    .FromEventPattern<FirebaseAuthEventArgs>(
+                        x => _authLink.FirebaseAuthRefreshed += x,
+                        x =>
+                        {
+                            _authLink.FirebaseAuthRefreshed -= x;
+                        })
+                    .Select(x => x.EventArgs.FirebaseAuth)
+                    .Finally(
+                        () =>
+                        {
+                            _authLink = null;
+                        });
+
+                _accountSavedSubscription = _whenAuthRefreshed
+                    .Select(firebaseAuth => SaveAccount(firebaseAuth))
+                    .Subscribe();
+            }
+        }
+
+        public IObservable<bool> IsAuthenticated
+        {
+            get
+            {
+                if(AuthLink != null)
+                {
+                    return Observable.Return(true);
+                }
+                else
+                {
+                    return _localStorageService
+                        .Get(FIREBASE_AUTH_JSON_KEY)
+                        .Select(
+                            authJson =>
+                            {
+                                if(authJson != null)
+                                {
+                                    var auth = JsonConvert.DeserializeObject<Firebase.Auth.FirebaseAuth>(authJson);
+                                    AuthLink = new FirebaseAuthLink(_authProvider, auth);
+                                }
+
+                                return AuthLink != null;
+                            });
+                }
+            }
+        }
 
         public async Task<string> GetIdTokenAsync()
         {
@@ -58,7 +101,7 @@ namespace GameCtor.FirebaseAuth.DotNet
             return _authProvider
                 .SignInAnonymouslyAsync()
                 .ToObservable()
-                .Do(authLink => _authLink = authLink)
+                .Do(authLink => AuthLink = authLink)
                 .SelectMany(authLink => SaveAccount(authLink));
         }
 
@@ -87,7 +130,7 @@ namespace GameCtor.FirebaseAuth.DotNet
             return _authProvider
                 .SignInWithEmailAndPasswordAsync(email, password)
                 .ToObservable()
-                .Do(authLink => _authLink = authLink)
+                .Do(authLink => AuthLink = authLink)
                 .SelectMany(authLink => SaveAccount(authLink));
         }
 
@@ -103,7 +146,7 @@ namespace GameCtor.FirebaseAuth.DotNet
 
         public void SignOut()
         {
-            _authLink = null;
+            AuthLink = null;
             _localStorageService.Remove(FIREBASE_AUTH_JSON_KEY);
         }
 
@@ -117,7 +160,7 @@ namespace GameCtor.FirebaseAuth.DotNet
             return _authProvider
                 .SignInWithOAuthAsync(authType, authToken)
                 .ToObservable()
-                .Do(authLink => _authLink = authLink)
+                .Do(authLink => AuthLink = authLink)
                 .SelectMany(authLink => SaveAccount(authLink));
         }
 
