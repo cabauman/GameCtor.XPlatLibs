@@ -5,7 +5,7 @@ using GameCtor.LocalStorage;
 
 namespace LocalStorage.XamarinEssentials
 {
-    public class LocalStorageService : ILocalStorageService
+    public class SecureStorage : ILocalStorageService
     {
         public IObservable<string> Get(string key)
         {
