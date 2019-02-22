@@ -7,9 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FirebaseDatabase.net" Version="4.0.0-alpha8" />
-    <PackageReference Include="System.Reactive" Version="4.1.0" />
-    <PackageReference Include="System.Reactive.Compatibility" Version="4.1.0" />
+    <PackageReference Include="FirebaseDatabase.net" Version="4.0.1" />
+    <PackageReference Include="System.Reactive" Version="4.1.2" />
   </ItemGroup>
 
   <ItemGroup>

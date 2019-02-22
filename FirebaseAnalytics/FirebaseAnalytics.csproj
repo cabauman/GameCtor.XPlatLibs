@@ -5,9 +5,7 @@
     <TargetFrameworks></TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80</TargetFrameworks>
-    <!--Feel free to add as many targets as you need below
-    netstandard1.0;netstandard2.0;MonoAndroid80;Xamarin.iOS10;uap10.0.16299;Xamarin.TVOS10;Xamarin.WatchOS10;Xamarin.Mac20;Tizen40
-    -->
+
     <AssemblyName>GameCtor.FirebaseAnalytics</AssemblyName>
     <RootNamespace>GameCtor.FirebaseAnalytics</RootNamespace>
     <PackageId>GameCtor.FirebaseAnalytics</PackageId>
@@ -19,7 +17,6 @@
     <PackageVersion>1.0.0.0</PackageVersion>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
-    <LangVersion>7.1</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
@@ -53,6 +50,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.55" PrivateAssets="All" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="5.5.0" />
     <Compile Include="**\*.shared.cs" />
   </ItemGroup>
 
@@ -67,41 +65,8 @@
 
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <Compile Include="**\*.apple.cs" />
-    <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="5.0.1" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="5.1.4.1" />
   </ItemGroup>
-
-  <!--Additional item groups-->
-  <!--
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.TVOS')) ">
-    <Compile Include="**\*.tvos.cs" />
-  </ItemGroup>
-
-
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.WatchOS')) ">
-    <Compile Include="**\*.watchos.cs" />
-  </ItemGroup>
-
-
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.Mac')) ">
-    <Compile Include="**\*.mac.cs" />
-  </ItemGroup>
-
-  
-   <ItemGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
-    <Compile Include="**\*.netcore.cs" />
-  </ItemGroup>
-  
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('Tizen')) ">
-    <Compile Include="**\*.tizen.cs" />
-    <PackageReference Include="Tizen.NET" Version="4.0.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('net45')) ">
-    <Compile Include="**\*.dotnet.cs" />
-  </ItemGroup>
-  -->
-
-
 
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>
