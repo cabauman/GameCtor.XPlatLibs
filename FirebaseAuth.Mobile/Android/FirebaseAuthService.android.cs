@@ -39,6 +39,8 @@ namespace GameCtor.FirebaseAuth.Mobile
 
         public IFirebaseUser CurrentUser => _auth.CurrentUser != null ? new FirebaseUser(_auth.CurrentUser) : null;
 
+        public IObservable<bool> IsAuthenticated => throw new NotImplementedException();
+
         public async Task<string> GetIdTokenAsync()
         {
             var result = await _auth.CurrentUser.GetIdTokenAsync(false);

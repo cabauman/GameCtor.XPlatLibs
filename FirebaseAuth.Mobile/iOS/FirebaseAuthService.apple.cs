@@ -53,6 +53,8 @@ namespace GameCtor.FirebaseAuth.Mobile
             get { return Auth.DefaultInstance.CurrentUser != null ? new FirebaseUser(Auth.DefaultInstance.CurrentUser) : null; }
         }
 
+        public IObservable<bool> IsAuthenticated => throw new NotImplementedException();
+
         /// <summary>
         /// Signs in the user anonymously without requiring any credential.
         /// </summary>
