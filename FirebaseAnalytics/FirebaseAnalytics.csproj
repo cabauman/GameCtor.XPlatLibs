@@ -49,7 +49,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.55" PrivateAssets="All" />
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.68" PrivateAssets="All" />
     <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="5.5.0" />
     <Compile Include="**\*.shared.cs" />
   </ItemGroup>
