@@ -19,7 +19,7 @@ namespace GameCtor.FirebaseAnalytics
         public FirebaseAnalyticsService()
         {
             Context context = CrossCurrentActivity.Current.Activity;
-            if(context == null)
+            if (context == null)
             {
                 throw new NullReferenceException("Initialize CrossCurrentActivity before using Firebase Analytics.");
             }

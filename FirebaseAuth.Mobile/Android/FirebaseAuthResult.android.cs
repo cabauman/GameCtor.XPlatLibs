@@ -12,14 +12,8 @@ namespace GameCtor.FirebaseAuth.Mobile
             _authResult = authResult;
         }
 
-        public IFirebaseUser User
-        {
-            get { return new FirebaseUser(_authResult.User); }
-        }
+        public IFirebaseUser User => new FirebaseUser(_authResult.User);
 
-        public IAdditionalFirebaseUserInfo AdditionalUserInfo
-        {
-            get { return new AdditionalFirebaseUserInfo(_authResult.AdditionalUserInfo); }
-        }
+        public IAdditionalFirebaseUserInfo AdditionalUserInfo => new AdditionalFirebaseUserInfo(_authResult.AdditionalUserInfo);
     }
 }

@@ -122,7 +122,7 @@ namespace GameCtor.XamarinAuth
             GetUsernameAsyncFunc getUsernameAsync = null,
             bool isUsingNativeUI = true)
         {
-            if(string.IsNullOrEmpty(accessTokenUrl))
+            if (string.IsNullOrEmpty(accessTokenUrl))
             {
                 AuthenticationState.Authenticator = new OAuth2Authenticator(
                     clientId,
@@ -190,7 +190,7 @@ namespace GameCtor.XamarinAuth
                 .Save(account, _provider);
 
             string authToken = account.Properties["access_token"];
-            if(AuthenticationState.Authenticator.GetType() == typeof(OAuth1Authenticator))
+            if (AuthenticationState.Authenticator.GetType() == typeof(OAuth1Authenticator))
             {
                 authToken = account.Properties["oauth_token"];
             }

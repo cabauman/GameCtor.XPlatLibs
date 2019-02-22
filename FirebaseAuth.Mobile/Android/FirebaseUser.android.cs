@@ -157,7 +157,7 @@ namespace GameCtor.FirebaseAuth.Mobile
                     {
                         authResult = await _user.UnlinkAsync(providerId);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         observer.OnError(GetFirebaseAuthException(ex));
                         return;
@@ -191,7 +191,7 @@ namespace GameCtor.FirebaseAuth.Mobile
                 GetTokenResult tokenResult = await _user.GetIdTokenAsync(forceRefresh);
                 return tokenResult.Token;
             }
-            catch(FirebaseException ex)
+            catch (FirebaseException ex)
             {
                 throw GetFirebaseAuthException(ex);
             }
@@ -205,12 +205,12 @@ namespace GameCtor.FirebaseAuth.Mobile
             {
                 authResult = await _user.LinkWithCredentialAsync(credential);
             }
-            catch(Firebase.Auth.FirebaseAuthException ex)
+            catch (Firebase.Auth.FirebaseAuthException ex)
             {
                 Console.WriteLine(ex.Message);
                 throw GetFirebaseAuthException(ex);
             }
-            catch(RuntimeWrappedException ex)
+            catch (RuntimeWrappedException ex)
             {
                 var authEx = ex.WrappedException as Firebase.Auth.FirebaseAuthException;
                 throw GetFirebaseAuthException(ex);

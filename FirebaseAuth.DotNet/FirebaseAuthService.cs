@@ -40,7 +40,7 @@ namespace GameCtor.FirebaseAuth.DotNet
             {
                 _accountSavedSubscription?.Dispose();
 
-                if(value == null) return;
+                if (value == null) return;
 
                 _authLink = value;
 
@@ -68,7 +68,7 @@ namespace GameCtor.FirebaseAuth.DotNet
         {
             get
             {
-                if(AuthLink != null)
+                if (AuthLink != null)
                 {
                     return Observable.Return(true);
                 }
@@ -79,7 +79,7 @@ namespace GameCtor.FirebaseAuth.DotNet
                         .Select(
                             authJson =>
                             {
-                                if(authJson != null)
+                                if (authJson != null)
                                 {
                                     var auth = JsonConvert.DeserializeObject<Firebase.Auth.FirebaseAuth>(authJson);
                                     AuthLink = new FirebaseAuthLink(_authProvider, auth);

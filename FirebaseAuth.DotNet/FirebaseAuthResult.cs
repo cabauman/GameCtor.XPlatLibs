@@ -13,14 +13,8 @@ namespace GameCtor.FirebaseAuth.DotNet
             _authLink = authLink;
         }
 
-        public IFirebaseUser User
-        {
-            get { return new FirebaseUser(_authLink); }
-        }
+        public IFirebaseUser User => new FirebaseUser(_authLink);
 
-        public IAdditionalFirebaseUserInfo AdditionalUserInfo
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public IAdditionalFirebaseUserInfo AdditionalUserInfo => throw new NotImplementedException();
     }
 }

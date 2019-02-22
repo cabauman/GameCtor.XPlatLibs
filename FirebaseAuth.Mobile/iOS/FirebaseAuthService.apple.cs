@@ -48,10 +48,7 @@ namespace GameCtor.FirebaseAuth.Mobile
         /// <summary>
         /// Gets the current user.
         /// </summary>
-        public IFirebaseUser CurrentUser
-        {
-            get { return Auth.DefaultInstance.CurrentUser != null ? new FirebaseUser(Auth.DefaultInstance.CurrentUser) : null; }
-        }
+        public IFirebaseUser CurrentUser => Auth.DefaultInstance.CurrentUser != null ? new FirebaseUser(Auth.DefaultInstance.CurrentUser) : null;
 
         public IObservable<bool> IsAuthenticated => throw new NotImplementedException();
 
@@ -217,7 +214,7 @@ namespace GameCtor.FirebaseAuth.Mobile
         public void SignOut()
         {
             bool success = Auth.DefaultInstance.SignOut(out NSError error);
-            if(!success)
+            if (!success)
             {
                 throw new NSErrorException(error);
             }
@@ -230,7 +227,7 @@ namespace GameCtor.FirebaseAuth.Mobile
                 AuthDataResult authResult = await Auth.DefaultInstance.SignInAndRetrieveDataWithCredentialAsync(credential);
                 return new FirebaseAuthResult(authResult);
             }
-            catch(NSErrorException ex)
+            catch (NSErrorException ex)
             {
                 throw GetFirebaseAuthException(ex);
             }
@@ -239,7 +236,7 @@ namespace GameCtor.FirebaseAuth.Mobile
         private FirebaseAuthException GetFirebaseAuthException(NSErrorException ex)
         {
             AuthErrorCode errorCode;
-            if(IntPtr.Size == 8) // 64 bits devices
+            if (IntPtr.Size == 8) // 64 bits devices
             {
                 errorCode = (AuthErrorCode)((long)ex.Error.Code);
             }

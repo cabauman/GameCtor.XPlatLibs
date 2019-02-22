@@ -168,7 +168,7 @@ namespace GameCtor.FirebaseAuth.Mobile
             {
                 return await _user.GetIdTokenAsync(forceRefresh);
             }
-            catch(NSErrorException ex)
+            catch (NSErrorException ex)
             {
                 throw GetFirebaseAuthException(ex);
             }
@@ -181,7 +181,7 @@ namespace GameCtor.FirebaseAuth.Mobile
                 AuthDataResult authResult = await _user.LinkAndRetrieveDataAsync(credential);
                 return new FirebaseAuthResult(authResult);
             }
-            catch(NSErrorException ex)
+            catch (NSErrorException ex)
             {
                 throw GetFirebaseAuthException(ex);
             }
@@ -190,7 +190,7 @@ namespace GameCtor.FirebaseAuth.Mobile
         private FirebaseAuthException GetFirebaseAuthException(NSErrorException ex)
         {
             AuthErrorCode errorCode;
-            if(IntPtr.Size == 8) // 64 bits devices
+            if (IntPtr.Size == 8) // 64 bits devices
             {
                 errorCode = (AuthErrorCode)((long)ex.Error.Code);
             }
