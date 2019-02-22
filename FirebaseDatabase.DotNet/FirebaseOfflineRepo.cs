@@ -51,9 +51,9 @@ namespace GameCtor.FirebaseDatabase.DotNet
         {
             // Doesn't work offline. Need offline solution.
             return _baseQuery
-                .PatchAsync(items.ToDictionary(_ => FirebaseKeyGenerator.Next()))
+                .PatchAsync(items.ToDictionary(x => x.Id = FirebaseKeyGenerator.Next()))
                 .ToObservable()
-                .Concat(_realtimeDb.PullAsync().ToObservable());
+                .SelectMany(_realtimeDb.PullAsync().ToObservable());
         }
 
         public IObservable<Unit> Upsert(T item)
@@ -66,9 +66,9 @@ namespace GameCtor.FirebaseDatabase.DotNet
         {
             // Doesn't work offline. Need offline solution.
             return _baseQuery
-                .PatchAsync(items.ToDictionary(x => x.Id))
+                .PatchAsync(items.ToDictionary(x => x.Id = x.Id ?? FirebaseKeyGenerator.Next()))
                 .ToObservable()
-                .Concat(_realtimeDb.PullAsync().ToObservable());
+                .SelectMany(_ => _realtimeDb.PullAsync().ToObservable());
         }
 
         public IObservable<Unit> Delete(string id)
