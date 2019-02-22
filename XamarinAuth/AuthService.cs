@@ -76,13 +76,51 @@ namespace GameCtor.XamarinAuth
             TriggerOAuth2Flow(clientId, clientSecret, scope, authorizeUrl, redirectUrl, accessTokenUrl);
         }
 
+        public void TriggerGithubAuthFlow(
+            string clientId,
+            string clientSecret,
+            string scope,               // "user"
+            string authorizeUrl,        // "https://github.com/login/oauth/authorize"
+            string redirectUrl,         // "https://localhost"
+            string accessTokenUrl)      // "https://github.com/login/oauth/access_token"
+        {
+            _provider = "github";
+            TriggerOAuth2Flow(clientId, clientSecret, scope, authorizeUrl, redirectUrl, accessTokenUrl);
+        }
+
+        public void TriggerLinkedInAuthFlow(
+            string clientId,
+            string clientSecret,
+            string scope,               // "r_basicprofile"
+            string authorizeUrl,
+            string redirectUrl,
+            string accessTokenUrl)
+        {
+            _provider = "linkedin";
+            TriggerOAuth2Flow(clientId, clientSecret, scope, authorizeUrl, redirectUrl, accessTokenUrl);
+        }
+
+        public void TriggerTwitterAuthFlow(
+            string consumerKey,
+            string consumerSecret,
+            string requestTokenUrl,     // "https://api.twitter.com/oauth/request_token"
+            string authorizeUrl,        // "https://api.twitter.com/oauth/authorize"
+            string accessTokenUrl,      // "https://api.twitter.com/oauth/access_token"
+            string callbackUrl)         // "http://www.xamarin.com"
+        {
+            _provider = "twitter";
+            TriggerOAuth1Flow(consumerKey, consumerSecret, requestTokenUrl, authorizeUrl, accessTokenUrl, callbackUrl);
+        }
+
         public void TriggerOAuth2Flow(
             string clientId,
             string clientSecret,
             string scope,
             string authorizeUrl,
             string redirectUrl,
-            string accessTokenUrl)
+            string accessTokenUrl,
+            GetUsernameAsyncFunc getUsernameAsync = null,
+            bool isUsingNativeUI = true)
         {
             if(string.IsNullOrEmpty(accessTokenUrl))
             {
@@ -91,8 +129,8 @@ namespace GameCtor.XamarinAuth
                     scope,
                     new Uri(authorizeUrl),
                     new Uri(redirectUrl),
-                    getUsernameAsync: null,
-                    isUsingNativeUI: true);
+                    getUsernameAsync: getUsernameAsync,
+                    isUsingNativeUI: isUsingNativeUI);
             }
             else
             {
@@ -103,8 +141,8 @@ namespace GameCtor.XamarinAuth
                     new Uri(authorizeUrl),
                     new Uri(redirectUrl),
                     new Uri(accessTokenUrl),
-                    getUsernameAsync: null,
-                    isUsingNativeUI: true);
+                    getUsernameAsync: getUsernameAsync,
+                    isUsingNativeUI: isUsingNativeUI);
             }
 
             _authFlowTriggered.OnNext(Unit.Default);
@@ -112,17 +150,25 @@ namespace GameCtor.XamarinAuth
             presenter.Login(AuthenticationState.Authenticator);
         }
 
-        public void TriggerOAuth1Flow(OAuth1Config config)
+        public void TriggerOAuth1Flow(
+            string consumerKey,
+            string consumerSecret,
+            string requestTokenUrl,
+            string authorizeUrl,
+            string accessTokenUrl,
+            string callbackUrl,
+            GetUsernameAsyncFunc getUsernameAsync = null,
+            bool isUsingNativeUI = false)
         {
             AuthenticationState.Authenticator = new OAuth1Authenticator(
-                config.ConsumerKey,
-                config.ConsumerSecret,
-                new Uri(config.RequestTokenUrl),
-                new Uri(config.AuthorizeUrl),
-                new Uri(config.AccessTokenUrl),
-                new Uri(config.CallbackUrl),
-                getUsernameAsync: null,
-                isUsingNativeUI: false);
+                consumerKey,
+                consumerSecret,
+                new Uri(requestTokenUrl),
+                new Uri(authorizeUrl),
+                new Uri(accessTokenUrl),
+                new Uri(callbackUrl),
+                getUsernameAsync: getUsernameAsync,
+                isUsingNativeUI: isUsingNativeUI);
 
             _authFlowTriggered.OnNext(Unit.Default);
             var presenter = new Xamarin.Auth.Presenters.OAuthLoginPresenter();

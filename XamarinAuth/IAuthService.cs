@@ -26,5 +26,29 @@ namespace GameCtor.XamarinAuth
             string authorizeUrl,
             string redirectUrl,
             string accessTokenUrl);
+
+        void TriggerGithubAuthFlow(
+            string clientId,
+            string clientSecret,
+            string scope,
+            string authorizeUrl,
+            string redirectUrl,
+            string accessTokenUrl);
+
+        void TriggerLinkedInAuthFlow(
+            string clientId,
+            string clientSecret,
+            string scope,
+            string authorizeUrl,
+            string redirectUrl,
+            string accessTokenUrl);
+
+        void TriggerTwitterAuthFlow(
+            string clientId,
+            string clientSecret,
+            string scope,
+            string authorizeUrl,
+            string redirectUrl,
+            string accessTokenUrl);
     }
 }
