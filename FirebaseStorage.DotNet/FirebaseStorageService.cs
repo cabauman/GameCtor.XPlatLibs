@@ -24,12 +24,17 @@ namespace GameCtor.FirebaseStorage.DotNet
                 .ToObservable();
         }
 
-        public IObservable<Unit> Delete(string path)
+        public IObservable<Unit> Delete(string path, bool ignoreNotFoundException = true)
         {
             return _storage
                 .Child(path)
                 .DeleteAsync()
-                .ToObservable();
+                .ToObservable()
+                .Catch<Unit, FirebaseStorageException>(
+                    ex =>
+                        ex.ObjectNotFound() && ignoreNotFoundException ?
+                        Observable.Return(Unit.Default) :
+                        Observable.Throw<Unit>(ex));
         }
 
         public IObservable<Either<int, string>> Upload(

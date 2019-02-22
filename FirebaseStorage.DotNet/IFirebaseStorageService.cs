@@ -10,7 +10,7 @@ namespace GameCtor.FirebaseStorage.DotNet
     {
         IObservable<string> GetDownloadUrl(string path);
 
-        IObservable<Unit> Delete(string path);
+        IObservable<Unit> Delete(string path, bool ignoreNotFoundException = true);
 
         IObservable<Either<int, string>> Upload(string path, Stream stream, string mimeType = null);
 
