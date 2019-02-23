@@ -1,5 +1,5 @@
-﻿using Firebase.Auth;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Firebase.Auth;
 
 namespace GameCtor.FirebaseAuth.Mobile
 {
@@ -12,8 +12,10 @@ namespace GameCtor.FirebaseAuth.Mobile
             _authResult = authResult;
         }
 
+        /// <inheritdoc/>
         public IFirebaseUser User => new FirebaseUser(_authResult.User);
 
+        /// <inheritdoc/>
         public IAdditionalFirebaseUserInfo AdditionalUserInfo => new AdditionalFirebaseUserInfo(_authResult.AdditionalUserInfo);
     }
 }

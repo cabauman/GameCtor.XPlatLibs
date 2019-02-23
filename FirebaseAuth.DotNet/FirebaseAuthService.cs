@@ -9,6 +9,9 @@ using Newtonsoft.Json;
 
 namespace GameCtor.FirebaseAuth.DotNet
 {
+    /// <summary>
+    /// FirebaseDatabaseDotNet implementation of IFirebaseAuthService.
+    /// </summary>
     public class FirebaseAuthService : IFirebaseAuthService, IDisposable
     {
         private const string FIREBASE_AUTH_JSON_KEY = "FIREBASE_AUTH_JSON";
@@ -21,12 +24,18 @@ namespace GameCtor.FirebaseAuth.DotNet
 
         private FirebaseAuthLink _authLink;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FirebaseAuthService"/> class.
+        /// </summary>
+        /// <param name="apiKey">The API key.</param>
+        /// <param name="localStorageService">The local storage service.</param>
         public FirebaseAuthService(string apiKey, ILocalStorageService localStorageService)
         {
             _authProvider = new FirebaseAuthProvider(new FirebaseConfig(apiKey));
             _localStorageService = localStorageService;
         }
 
+        /// <inheritdoc/>
         public IFirebaseUser CurrentUser => _authLink != null ? new FirebaseUser(_authLink) : null;
 
         public FirebaseAuthLink AuthLink
@@ -40,17 +49,17 @@ namespace GameCtor.FirebaseAuth.DotNet
             {
                 _accountSavedSubscription?.Dispose();
 
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
 
                 _authLink = value;
 
                 _whenAuthRefreshed = Observable
                     .FromEventPattern<FirebaseAuthEventArgs>(
                         x => _authLink.FirebaseAuthRefreshed += x,
-                        x =>
-                        {
-                            _authLink.FirebaseAuthRefreshed -= x;
-                        })
+                        x => _authLink.FirebaseAuthRefreshed -= x)
                     .Select(x => x.EventArgs.FirebaseAuth)
                     .Finally(
                         () =>
@@ -64,6 +73,7 @@ namespace GameCtor.FirebaseAuth.DotNet
             }
         }
 
+        /// <inheritdoc/>
         public IObservable<bool> IsAuthenticated
         {
             get
@@ -91,11 +101,13 @@ namespace GameCtor.FirebaseAuth.DotNet
             }
         }
 
+        /// <inheritdoc/>
         public async Task<string> GetIdTokenAsync()
         {
             return (await _authLink.GetFreshAuthAsync()).FirebaseToken;
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInAnonymously()
         {
             return _authProvider
@@ -105,26 +117,31 @@ namespace GameCtor.FirebaseAuth.DotNet
                 .SelectMany(authLink => SaveAccount(authLink));
         }
 
-        public IObservable<Unit> SignInWithFacebook(string authToken)
+        /// <inheritdoc/>
+        public IObservable<Unit> SignInWithFacebook(string accessToken)
         {
-            return SignInWithOAuth(FirebaseAuthType.Facebook, authToken);
+            return SignInWithOAuth(FirebaseAuthType.Facebook, accessToken);
         }
 
-        public IObservable<Unit> SignInWithGoogle(string idToken, string authToken)
+        /// <inheritdoc/>
+        public IObservable<Unit> SignInWithGoogle(string idToken, string accessToken)
         {
-            return SignInWithOAuth(FirebaseAuthType.Google, authToken);
+            return SignInWithOAuth(FirebaseAuthType.Google, accessToken);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithTwitter(string token, string secret)
         {
             return SignInWithOAuth(FirebaseAuthType.Twitter, token);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithGithub(string token)
         {
             return SignInWithOAuth(FirebaseAuthType.Github, token);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithEmail(string email, string password)
         {
             return _authProvider
@@ -134,16 +151,19 @@ namespace GameCtor.FirebaseAuth.DotNet
                 .SelectMany(authLink => SaveAccount(authLink));
         }
 
+        /// <inheritdoc/>
         public IObservable<PhoneNumberSignInResult> SignInWithPhoneNumber(string phoneNumber)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithPhoneNumber(string verificationId, string verificationCode)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public void SignOut()
         {
             AuthLink = null;
@@ -152,7 +172,7 @@ namespace GameCtor.FirebaseAuth.DotNet
 
         public void Dispose()
         {
-            _accountSavedSubscription.Dispose();
+            _accountSavedSubscription?.Dispose();
         }
 
         private IObservable<Unit> SignInWithOAuth(FirebaseAuthType authType, string authToken)

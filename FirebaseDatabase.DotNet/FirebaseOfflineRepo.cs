@@ -47,6 +47,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .Select(_ => Unit.Default);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Add(IEnumerable<T> items)
         {
             // Doesn't work offline. Need offline solution.
@@ -56,12 +57,22 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .SelectMany(_realtimeDb.PullAsync().ToObservable());
         }
 
+        public IObservable<Unit> Add2(IEnumerable<T> items)
+        {
+            return items
+                .ToObservable()
+                .SelectMany(x => Add(x))
+                .LastAsync();
+        }
+
+        /// <inheritdoc/>
         public IObservable<Unit> Upsert(T item)
         {
             return Observable
                 .Start(() => _realtimeDb.Patch(item.Id, item));
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Upsert(IEnumerable<T> items)
         {
             // Doesn't work offline. Need offline solution.
@@ -71,12 +82,14 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .SelectMany(_ => _realtimeDb.PullAsync().ToObservable());
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Delete(string id)
         {
             return Observable
                 .Start(() => _realtimeDb.Delete(id));
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Delete(IEnumerable<T> items)
         {
             // Doesn't work offline. Need offline solution.
@@ -86,6 +99,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .Concat(_realtimeDb.PullAsync().ToObservable());
         }
 
+        /// <inheritdoc/>
         public IObservable<T> GetItem(string id)
         {
             return Observable
@@ -97,6 +111,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                     });
         }
 
+        /// <inheritdoc/>
         public IObservable<IEnumerable<T>> GetItems(bool fetchOnline = false)
         {
             return Observable

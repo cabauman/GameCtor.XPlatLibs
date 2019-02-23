@@ -1,5 +1,5 @@
-﻿using Firebase.Auth;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Firebase.Auth;
 
 namespace GameCtor.FirebaseAuth.Mobile
 {
@@ -14,8 +14,10 @@ namespace GameCtor.FirebaseAuth.Mobile
 
         //public IDictionary<string, object> Profile => _additionalUserInfo.Profile;
 
+        /// <inheritdoc/>
         public string ProviderId => _additionalUserInfo.ProviderId;
 
+        /// <inheritdoc/>
         public string Username => _additionalUserInfo.Username;
     }
 }

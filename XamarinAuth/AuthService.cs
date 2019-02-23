@@ -7,7 +7,10 @@ using Xamarin.Auth;
 
 namespace GameCtor.XamarinAuth
 {
-    public partial class AuthService : IAuthService
+    /// <summary>
+    /// XamarinAuth implementation of IAuthService.
+    /// </summary>
+    public class AuthService : IAuthService
     {
         private string _provider;
         private Subject<Unit> _authFlowTriggered;
@@ -46,12 +49,16 @@ namespace GameCtor.XamarinAuth
                 .Switch();
         }
 
+        /// <inheritdoc/>
         public IObservable<string> SignInSuccessful { get; private set; }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInCanceled { get; private set; }
 
+        /// <inheritdoc/>
         public IObservable<Exception> SignInFailed { get; private set; }
 
+        /// <inheritdoc/>
         public void TriggerGoogleAuthFlow(
             string clientId,
             string clientSecret,
@@ -64,6 +71,7 @@ namespace GameCtor.XamarinAuth
             TriggerOAuth2Flow(clientId, clientSecret, scope, authorizeUrl, redirectUrl, accessTokenUrl);
         }
 
+        /// <inheritdoc/>
         public void TriggerFacebookAuthFlow(
             string clientId,
             string clientSecret,
@@ -76,6 +84,7 @@ namespace GameCtor.XamarinAuth
             TriggerOAuth2Flow(clientId, clientSecret, scope, authorizeUrl, redirectUrl, accessTokenUrl);
         }
 
+        /// <inheritdoc/>
         public void TriggerGithubAuthFlow(
             string clientId,
             string clientSecret,
@@ -88,6 +97,7 @@ namespace GameCtor.XamarinAuth
             TriggerOAuth2Flow(clientId, clientSecret, scope, authorizeUrl, redirectUrl, accessTokenUrl);
         }
 
+        /// <inheritdoc/>
         public void TriggerLinkedInAuthFlow(
             string clientId,
             string clientSecret,
@@ -100,6 +110,7 @@ namespace GameCtor.XamarinAuth
             TriggerOAuth2Flow(clientId, clientSecret, scope, authorizeUrl, redirectUrl, accessTokenUrl);
         }
 
+        /// <inheritdoc/>
         public void TriggerTwitterAuthFlow(
             string consumerKey,
             string consumerSecret,

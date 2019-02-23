@@ -1,11 +1,11 @@
-﻿using Firebase.Auth;
-using Foundation;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
+using Firebase.Auth;
+using Foundation;
 
 namespace GameCtor.FirebaseAuth.Mobile
 {
@@ -18,22 +18,31 @@ namespace GameCtor.FirebaseAuth.Mobile
             _user = user;
         }
 
+        /// <inheritdoc/>
         public bool IsEmailVerified => _user.IsEmailVerified;
 
+        /// <inheritdoc/>
         public string DisplayName => _user.DisplayName;
 
+        /// <inheritdoc/>
         public bool IsAnonymous => _user.IsAnonymous;
 
+        /// <inheritdoc/>
         public string PhoneNumber => _user.PhoneNumber;
 
+        /// <inheritdoc/>
         public Uri PhotoUrl => new Uri(_user.PhotoUrl.AbsoluteString);
 
+        /// <inheritdoc/>
         public string Email => _user.Email;
 
+        /// <inheritdoc/>
         public string ProviderId => _user.ProviderId;
 
+        /// <inheritdoc/>
         public IList<string> Providers => _user.ProviderData.Select(x => x.ProviderId).ToList();
 
+        /// <inheritdoc/>
         public string Uid => _user.Uid;
 
         /// <summary>

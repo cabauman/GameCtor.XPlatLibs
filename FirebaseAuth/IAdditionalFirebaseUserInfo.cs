@@ -6,8 +6,14 @@ namespace GameCtor.FirebaseAuth
     {
         //IDictionary<string, object> Profile { get; }
 
+        /// <summary>
+        /// Gets the provider ID.
+        /// </summary>
         string ProviderId { get; }
 
+        /// <summary>
+        /// Gets the username.
+        /// </summary>
         string Username { get; }
     }
 }

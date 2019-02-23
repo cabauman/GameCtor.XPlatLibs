@@ -20,6 +20,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
             _childQuery = client.Child(path);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Add(T item)
         {
             return _childQuery
@@ -29,6 +30,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .Select(_ => Unit.Default);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Add(IEnumerable<T> items)
         {
             return _childQuery
@@ -36,6 +38,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .ToObservable();
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Upsert(T item)
         {
             return _childQuery
@@ -44,6 +47,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .ToObservable();
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Upsert(IEnumerable<T> items)
         {
             return _childQuery
@@ -51,6 +55,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .ToObservable();
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Delete(string id)
         {
             return _childQuery
@@ -59,6 +64,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .ToObservable();
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Delete(IEnumerable<T> items)
         {
             return _childQuery
@@ -66,6 +72,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .ToObservable();
         }
 
+        /// <inheritdoc/>
         public IObservable<T> GetItem(string id)
         {
             return _childQuery
@@ -75,6 +82,7 @@ namespace GameCtor.FirebaseDatabase.DotNet
                 .Do(item => item.Id = id);
         }
 
+        /// <inheritdoc/>
         public IObservable<IEnumerable<T>> GetItems(bool fetchOnline = false)
         {
             return _childQuery

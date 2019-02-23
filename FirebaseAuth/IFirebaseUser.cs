@@ -6,22 +6,49 @@ namespace GameCtor.FirebaseAuth
 {
     public interface IFirebaseUser
     {
+        /// <summary>
+        /// Gets a value indicating whether this user's email has been verified.
+        /// </summary>
         bool IsEmailVerified { get; }
 
+        /// <summary>
+        /// Gets the display name.
+        /// </summary>
         string DisplayName { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether this user is signed in anonymously.
+        /// </summary>
         bool IsAnonymous { get; }
 
+        /// <summary>
+        /// Gets the phone number.
+        /// </summary>
         string PhoneNumber { get; }
 
+        /// <summary>
+        /// Gets the photo URL.
+        /// </summary>
         Uri PhotoUrl { get; }
 
+        /// <summary>
+        /// Gets the email.
+        /// </summary>
         string Email { get; }
 
+        /// <summary>
+        /// Gets the provider ID.
+        /// </summary>
         string ProviderId { get; }
 
+        /// <summary>
+        /// Gets the list of providers.
+        /// </summary>
         IList<string> Providers { get; }
 
+        /// <summary>
+        /// Gets the uid.
+        /// </summary>
         string Uid { get; }
 
         /// <summary>

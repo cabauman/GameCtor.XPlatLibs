@@ -1,13 +1,13 @@
-﻿using Firebase;
-using Firebase.Auth;
-using Java.Util.Concurrent;
-using Plugin.CurrentActivity;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Firebase;
+using Firebase.Auth;
+using Java.Util.Concurrent;
+using Plugin.CurrentActivity;
 
 namespace GameCtor.FirebaseAuth.Mobile
 {
@@ -20,22 +20,31 @@ namespace GameCtor.FirebaseAuth.Mobile
             _user = user;
         }
 
+        /// <inheritdoc/>
         public bool IsEmailVerified => _user.IsEmailVerified;
 
+        /// <inheritdoc/>
         public string DisplayName => _user.DisplayName;
 
+        /// <inheritdoc/>
         public bool IsAnonymous => _user.IsAnonymous;
 
+        /// <inheritdoc/>
         public string PhoneNumber => _user.PhoneNumber;
 
+        /// <inheritdoc/>
         public Uri PhotoUrl => new Uri(_user.PhotoUrl.ToString());
 
+        /// <inheritdoc/>
         public string Email => _user.Email;
 
+        /// <inheritdoc/>
         public string ProviderId => _user.ProviderId;
 
+        /// <inheritdoc/>
         public IList<string> Providers => _user.Providers;
 
+        /// <inheritdoc/>
         public string Uid => _user.Uid;
 
         /// <summary>

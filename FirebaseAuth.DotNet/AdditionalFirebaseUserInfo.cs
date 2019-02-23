@@ -1,6 +1,6 @@
-﻿using Firebase.Auth;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Firebase.Auth;
 
 namespace GameCtor.FirebaseAuth
 {

@@ -9,13 +9,14 @@ namespace GameCtor.FirebaseStorage.DotNet
 {
     public class FirebaseStorageService : IFirebaseStorageService
     {
-        Firebase.Storage.FirebaseStorage _storage;
+        private Firebase.Storage.FirebaseStorage _storage;
 
         public FirebaseStorageService(Firebase.Storage.FirebaseStorage storage)
         {
             _storage = storage;
         }
 
+        /// <inheritdoc/>
         public IObservable<string> GetDownloadUrl(string path)
         {
             return _storage
@@ -24,6 +25,7 @@ namespace GameCtor.FirebaseStorage.DotNet
                 .ToObservable();
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> Delete(string path, bool ignoreNotFoundException = true)
         {
             return _storage
@@ -37,6 +39,7 @@ namespace GameCtor.FirebaseStorage.DotNet
                         Observable.Throw<Unit>(ex));
         }
 
+        /// <inheritdoc/>
         public IObservable<Either<int, string>> Upload(
             string path,
             Stream stream,

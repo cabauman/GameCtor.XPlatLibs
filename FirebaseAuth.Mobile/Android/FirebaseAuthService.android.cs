@@ -1,14 +1,14 @@
-﻿using Android.App;
-using Firebase;
-using Firebase.Auth;
-using Java.Util.Concurrent;
-using Plugin.CurrentActivity;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
+using Android.App;
+using Firebase;
+using Firebase.Auth;
+using Java.Util.Concurrent;
+using Plugin.CurrentActivity;
 
 namespace GameCtor.FirebaseAuth.Mobile
 {
@@ -37,16 +37,20 @@ namespace GameCtor.FirebaseAuth.Mobile
             _auth = Firebase.Auth.FirebaseAuth.Instance;
         }
 
+        /// <inheritdoc/>
         public IFirebaseUser CurrentUser => _auth.CurrentUser != null ? new FirebaseUser(_auth.CurrentUser) : null;
 
+        /// <inheritdoc/>
         public IObservable<bool> IsAuthenticated => throw new NotImplementedException();
 
+        /// <inheritdoc/>
         public async Task<string> GetIdTokenAsync()
         {
             var result = await _auth.CurrentUser.GetIdTokenAsync(false);
             return result.Token;
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInAnonymously()
         {
             return _auth.SignInAnonymouslyAsync()
@@ -54,6 +58,7 @@ namespace GameCtor.FirebaseAuth.Mobile
                 .Select(_ => Unit.Default);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithEmail(string email, string password)
         {
             return _auth.SignInWithEmailAndPasswordAsync(email, password)
@@ -61,24 +66,28 @@ namespace GameCtor.FirebaseAuth.Mobile
                 .Select(_ => Unit.Default);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithFacebook(string accessToken)
         {
             AuthCredential credential = FacebookAuthProvider.GetCredential(accessToken);
             return SignInAsync(credential).ToObservable().Select(_ => Unit.Default);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithGithub(string token)
         {
             AuthCredential credential = GithubAuthProvider.GetCredential(token);
             return SignInAsync(credential).ToObservable().Select(_ => Unit.Default);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithGoogle(string idToken, string accessToken)
         {
             AuthCredential credential = GoogleAuthProvider.GetCredential(idToken, accessToken);
             return SignInAsync(credential).ToObservable().Select(_ => Unit.Default);
         }
 
+        /// <inheritdoc/>
         public IObservable<PhoneNumberSignInResult> SignInWithPhoneNumber(string phoneNumber)
         {
             var completionHandler = new PhoneNumberVerificationCallbackWrapper();
@@ -106,12 +115,14 @@ namespace GameCtor.FirebaseAuth.Mobile
                     });
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithPhoneNumber(string verificationId, string verificationCode)
         {
             AuthCredential credential = PhoneAuthProvider.GetCredential(verificationId, verificationCode);
             return SignInAsync(credential).ToObservable().Select(_ => Unit.Default);
         }
 
+        /// <inheritdoc/>
         public IObservable<Unit> SignInWithTwitter(string token, string secret)
         {
             AuthCredential credential = TwitterAuthProvider.GetCredential(token, secret);

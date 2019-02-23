@@ -7,14 +7,14 @@ using Plugin.CurrentActivity;
 namespace GameCtor.FirebaseAnalytics
 {
     /// <summary>
-    /// Android implementation of Firebase Analytics
+    /// Android implementation of Firebase Analytics.
     /// </summary>
     public class FirebaseAnalyticsService : IFirebaseAnalyticsService
     {
         private readonly Firebase.Analytics.FirebaseAnalytics _firebaseAnalytics;
 
         /// <summary>
-        /// Creates an instance of FirebaseAnalyticsService.
+        /// Initializes a new instance of the <see cref="FirebaseAnalyticsService"/> class.
         /// </summary>
         public FirebaseAnalyticsService()
         {
@@ -27,30 +27,19 @@ namespace GameCtor.FirebaseAnalytics
             _firebaseAnalytics = Firebase.Analytics.FirebaseAnalytics.GetInstance(context);
         }
 
-        /// <summary>
-        /// Sets the user ID.
-        /// </summary>
-        /// <param name="id">The user ID.</param>
+        /// <inheritdoc/>
         public void SetUserId(string id)
         {
             _firebaseAnalytics.SetUserId(id);
         }
 
-        /// <summary>
-        /// Sets a user property.
-        /// </summary>
-        /// <param name="name">The name of a user property.</param>
-        /// <param name="value">The value of a user property.</param>
+        /// <inheritdoc/>
         public void SetUserProperty(string name, string value)
         {
             _firebaseAnalytics.SetUserProperty(name, value);
         }
 
-        /// <summary>
-        /// Logs an event.
-        /// </summary>
-        /// <param name="name">The name of an event.</param>
-        /// <param name="parameters">A dictionary of event parameters.</param>
+        /// <inheritdoc/>
         public void LogEvent(string name, IDictionary<string, object> parameters)
         {
             Bundle bundle = new Bundle();

@@ -1,8 +1,8 @@
-﻿using Firebase;
-using Firebase.Auth;
-using System;
+﻿using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Firebase;
+using Firebase.Auth;
 
 namespace GameCtor.FirebaseAuth.Mobile
 {
